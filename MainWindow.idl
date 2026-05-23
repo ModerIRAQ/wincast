@@ -1,0 +1,22 @@
+namespace wincast
+{
+    [default_interface]
+    runtimeclass SearchResultItem
+    {
+        SearchResultItem(String name, String path, Boolean isUwp, Boolean isCalculator, String calcResult, Microsoft.UI.Xaml.Media.Imaging.SoftwareBitmapSource iconSource);
+        String Name{ get; };
+        String Path{ get; };
+        Boolean IsUWP{ get; };
+        Boolean IsCalculator{ get; };
+        String CalcResult{ get; };
+        Microsoft.UI.Xaml.Media.Imaging.SoftwareBitmapSource IconSource{ get; };
+        Microsoft.UI.Xaml.Visibility GetCalcVisibility();
+        Microsoft.UI.Xaml.Visibility GetUwpVisibility();
+    }
+
+    [default_interface]
+    runtimeclass MainWindow : Microsoft.UI.Xaml.Window
+    {
+        MainWindow();
+    }
+}

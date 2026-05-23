@@ -1,0 +1,30 @@
+# Visual Studio Build and Cache files
+.vs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+ARM/
+ARM64/
+build/
+*.user
+*.aps
+*.opendb
+*.sdf
+*.suo
+*.db
+*.ipch
+*.log
+*.bak
+
+# .NET / C# Build files
+**/bin/
+**/obj/
+AppPackages/
+BundleArtifacts/
+
+# User-specific files
+*.usersecrets
+*.suo
+*.user
+*.userprefs

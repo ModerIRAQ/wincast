@@ -1,0 +1,55 @@
+<Application
+    x:Class="WinCast.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinCast">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- ===== Deep Dark Surface Palette ===== -->
+            <SolidColorBrush x:Key="AppBackground"         Color="#0E0E14"/>
+            <SolidColorBrush x:Key="SurfaceBase"           Color="#13131A"/>
+            <SolidColorBrush x:Key="SurfaceCard"           Color="#1A1A24"/>
+            <SolidColorBrush x:Key="SurfaceHover"          Color="#20202E"/>
+            <SolidColorBrush x:Key="SurfaceSelected"       Color="#252535"/>
+            <SolidColorBrush x:Key="SearchBoxBorder"       Color="#2A2A3A"/>
+            <SolidColorBrush x:Key="DividerBrush"          Color="#1E1E2E"/>
+            <SolidColorBrush x:Key="DetailPaneBackground"  Color="#10101A"/>
+
+            <!-- ===== Accent: Vivid Violet-Indigo ===== -->
+            <SolidColorBrush x:Key="AccentColor"           Color="#8B7FF0"/>
+            <SolidColorBrush x:Key="AccentHoverColor"      Color="#A598F5"/>
+            <SolidColorBrush x:Key="AccentDim"             Color="#4A3FAA"/>
+            <SolidColorBrush x:Key="AccentGlow"            Color="#308B7FF0"/>
+            <SolidColorBrush x:Key="AccentBorder"          Color="#6C5FE6"/>
+
+            <!-- ===== Secondary Accent: Cyan for highlights ===== -->
+            <SolidColorBrush x:Key="CyanAccent"            Color="#22D3EE"/>
+            <SolidColorBrush x:Key="CyanDim"               Color="#0E7490"/>
+
+            <!-- ===== Text ===== -->
+            <SolidColorBrush x:Key="TextPrimary"           Color="#F0F0FA"/>
+            <SolidColorBrush x:Key="TextSecondary"         Color="#8888AA"/>
+            <SolidColorBrush x:Key="TextMuted"             Color="#55556A"/>
+            <SolidColorBrush x:Key="TextAccent"            Color="#8B7FF0"/>
+
+            <!-- ===== Status Colors ===== -->
+            <SolidColorBrush x:Key="GreenAccent"           Color="#34D399"/>
+            <SolidColorBrush x:Key="OrangeAccent"          Color="#F59E0B"/>
+
+            <!-- ===== Legacy compat keys ===== -->
+            <SolidColorBrush x:Key="SearchBoxBackground"   Color="#13131A"/>
+            <SolidColorBrush x:Key="ItemHoverBackground"   Color="#20202E"/>
+            <SolidColorBrush x:Key="ItemActiveBackground"  Color="#252535"/>
+
+            <!-- ===== Typography ===== -->
+            <FontFamily x:Key="DisplayFont">Segoe UI Variable Display, Segoe UI, sans-serif</FontFamily>
+            <FontFamily x:Key="BodyFont">Segoe UI Variable Text, Segoe UI, sans-serif</FontFamily>
+            <FontFamily x:Key="MonoFont">Cascadia Code, Consolas, Courier New, monospace</FontFamily>
+            <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets, sans-serif</FontFamily>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

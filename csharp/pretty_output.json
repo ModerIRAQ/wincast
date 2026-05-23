@@ -1,0 +1,601 @@
+﻿{
+    "GeneratedCodeFiles":  [
+
+                           ],
+    "GeneratedXamlFiles":  [
+                               "F:\\My Apps\\wincast\\csharp\\obj\\Debug\\net8.0-windows10.0.26100.0\\win-x64\\App.xaml",
+                               "F:\\My Apps\\wincast\\csharp\\obj\\Debug\\net8.0-windows10.0.26100.0\\win-x64\\MainWindow.xaml"
+                           ],
+    "GeneratedXbfFiles":  [
+                              "F:\\My Apps\\wincast\\csharp\\obj\\Debug\\net8.0-windows10.0.26100.0\\win-x64\\App.xbf",
+                              "F:\\My Apps\\wincast\\csharp\\obj\\Debug\\net8.0-windows10.0.26100.0\\win-x64\\MainWindow.xbf"
+                          ],
+    "GeneratedXamlPagesFiles":  [
+
+                                ],
+    "MSBuildLogEntries":  [
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:09 AM: 641 perfXC_StartPass2, WinCast"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:09 AM: 650 perfXC_FingerprintCheck, Using managed HashForWinMD"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:09 AM: 698 perfXC_FingerprintCheck, Differ: f:\\my apps\\wincast\\csharp\\obj\\debug\\net8.0-windows10.0.26100.0\\win-x64\\intermediatexaml\\wincast.dll"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:09 AM: 698 perfXC_FingerprintCheck, Using managed HashForWinMD"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:09 AM: 702 perfXC_FingerprintCheck, Local Assembly FingerPrint Changed"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:09 AM: 702 perfXC_FingerprintCheck, f144ece5-cec3-a9dc-c321-7f613868805d - f:\\my apps\\wincast\\csharp\\obj\\debug\\net8.0-windows10.0.26100.0\\win-x64\\intermediatexaml\\wincast.dll"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:09 AM: 702 perfXC_CreatingTypeUniverse"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:09 AM: 703 perfXC_CreatedTypeUniverse"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:09 AM: 704 perfXC_CreatingSchemaContext"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:09 AM: 745 perfXC_InitializeTypeNameMapStart"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:10 AM: 162 perfXC_InitializeTypeNameMapEnd"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:10 AM: 181 perfXC_CreatedSchemaContext"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:10 AM: 638 perfXC_PageStart, App.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:10 AM: 639 perfXC_PageLoadStart, F:\\My Apps\\wincast\\csharp\\App.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:10 AM: 724 perfXC_PageLoadEnd, F:\\My Apps\\wincast\\csharp\\App.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:10 AM: 726 perfXC_PageValidateStart, F:\\My Apps\\wincast\\csharp\\App.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:10 AM: 758 perfXC_PageValidateEnd, F:\\My Apps\\wincast\\csharp\\App.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:10 AM: 758 perfXC_PageTypeCollectStart"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:10 AM: 775 perfXC_PageTypeCollectEnd"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:10 AM: 778 perfXC_PageHarvestStart, App.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:10 AM: 799 perfXC_PageHarvestEnd, App.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:10 AM: 800 perfXC_PageDone, App.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:10 AM: 800 perfXC_PageStart, MainWindow.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:10 AM: 800 perfXC_PageLoadStart, F:\\My Apps\\wincast\\csharp\\MainWindow.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:11 AM: 247 perfXC_PageLoadEnd, F:\\My Apps\\wincast\\csharp\\MainWindow.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:11 AM: 247 perfXC_PageValidateStart, F:\\My Apps\\wincast\\csharp\\MainWindow.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:11 AM: 324 perfXC_PageValidateEnd, F:\\My Apps\\wincast\\csharp\\MainWindow.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:11 AM: 324 perfXC_PageTypeCollectStart"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:11 AM: 346 perfXC_PageTypeCollectEnd"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:11 AM: 352 perfXC_PageHarvestStart, MainWindow.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:11 AM: 360 perfXC_PageHarvestEnd, MainWindow.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:11 AM: 360 perfXC_PageDone, MainWindow.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:11 AM: 360 perfXC_SearchIxmpAndBindableStart"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 747 perfXC_SearchIxmpAndBindableEnd"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 750 perfXC_PageCodeGenStart, App"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 754 perfXC_PageCodeGenEnd, App"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 755 perfXC_PageEditStart, App.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 755 perfXC_PageEditEnd, App.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 755 perfXC_WriteFilesToDiskStart"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 756 perfXC_WriteFilesToDiskEnd"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 756 perfXC_PageCodeGenStart, MainWindow"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 880 perfXC_PageCodeGenEnd, MainWindow"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 880 perfXC_PageEditStart, MainWindow.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 884 perfXC_PageEditEnd, MainWindow.xaml"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 884 perfXC_WriteFilesToDiskStart"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 884 perfXC_WriteFilesToDiskEnd"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 888 perfXC_GenerateTypeInfoStart"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 899 perfXC_GenerateTypeInfoEnd"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 899 perfXC_WriteTypeinfoFilesToDiskStart"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 900 perfXC_WriteTypeinfoFilesToDiskEnd"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 900 perfXC_GenerateXBFStart, 2"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 944 perfXC_GenerateXBFEnd"
+                              },
+                              {
+                                  "SubCategory":  null,
+                                  "ErrorCode":  null,
+                                  "HelpKeyword":  null,
+                                  "File":  null,
+                                  "LineNumber":  0,
+                                  "ColumnNumber":  0,
+                                  "EndLineNumber":  0,
+                                  "EndColumnNumber":  0,
+                                  "Message":  "Xaml Compiler Marker: 1:00:12 AM: 947 perfXC_EndPass2, WinCast"
+                              }
+                          ]
+}
