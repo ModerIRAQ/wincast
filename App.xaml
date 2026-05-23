@@ -10,14 +10,14 @@
             </ResourceDictionary.MergedDictionaries>
 
             <!-- ===== Deep Dark Surface Palette ===== -->
-            <SolidColorBrush x:Key="AppBackground"         Color="#161720"/>
-            <SolidColorBrush x:Key="SurfaceBase"           Color="#1B1D28"/>
-            <SolidColorBrush x:Key="SurfaceCard"           Color="#222434"/>
-            <SolidColorBrush x:Key="SurfaceHover"          Color="#2C2E42"/>
-            <SolidColorBrush x:Key="SurfaceSelected"       Color="#34364D"/>
-            <SolidColorBrush x:Key="SearchBoxBorder"       Color="#2D2F44"/>
-            <SolidColorBrush x:Key="DividerBrush"          Color="#222434"/>
-            <SolidColorBrush x:Key="DetailPaneBackground"  Color="#12131A"/>
+            <SolidColorBrush x:Key="AppBackground"         Color="#1C1C1C"/>
+            <SolidColorBrush x:Key="SurfaceBase"           Color="#222222"/>
+            <SolidColorBrush x:Key="SurfaceCard"           Color="#282828"/>
+            <SolidColorBrush x:Key="SurfaceHover"          Color="#323232"/>
+            <SolidColorBrush x:Key="SurfaceSelected"       Color="#3C3C3C"/>
+            <SolidColorBrush x:Key="SearchBoxBorder"       Color="#303030"/>
+            <SolidColorBrush x:Key="DividerBrush"          Color="#2A2A2A"/>
+            <SolidColorBrush x:Key="DetailPaneBackground"  Color="#181818"/>
 
             <!-- ===== Accent: Vivid Violet-Indigo ===== -->
             <SolidColorBrush x:Key="AccentColor"           Color="#8B7FF0"/>
