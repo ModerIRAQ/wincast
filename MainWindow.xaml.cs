@@ -96,6 +96,8 @@ public sealed partial class MainWindow : Window
         ShowPreviewToggle.Toggled += ShowPreviewToggle_Toggled;
         LaunchOnStartupToggle.Toggled += LaunchOnStartupToggle_Toggled;
         BackdropComboBox.SelectionChanged += BackdropComboBox_SelectionChanged;
+        SettingsTabButton.Click += (s, e) => SwitchSettingsTab(true);
+        HelpTabButton.Click += (s, e) => SwitchSettingsTab(false);
     }
 
     // ═══════════════════════════════════════════════════
@@ -362,7 +364,7 @@ public sealed partial class MainWindow : Window
         for (int i = 0; i < count; i++)
         {
             var res = rawResults[i];
-            string category = res.IsCalculator ? "Calculator" : "Applications";
+            string category = res.IsCalculator ? "Calculator" : (res.IsShellCommand ? "Command" : "Applications");
 
             if (category != lastCategory)
             {
@@ -392,7 +394,9 @@ public sealed partial class MainWindow : Window
                 res.IsCalculator,
                 res.CalcResult,
                 iconSource,
-                category));
+                category,
+                res.IsShellCommand,
+                res.ShellCommandText));
         }
 
         // Auto-select first non-header item
@@ -441,9 +445,14 @@ public sealed partial class MainWindow : Window
 
         SetPreviewPaneVisibility(true);
 
+        // Reset default action labels
+        ActionOpenText.Text = "Open";
+        ActionCopyPathText.Text = "Copy Path";
+
         if (selectedItem.IsCalculator)
         {
             DetailCalcIcon.Visibility = Visibility.Visible;
+            DetailShellIcon.Visibility = Visibility.Collapsed;
             DetailAppIcon.Visibility = Visibility.Collapsed;
             DetailTitleText.Text = "Calculator";
             TypeBadgeText.Text = "Calculator";
@@ -452,6 +461,7 @@ public sealed partial class MainWindow : Window
 
             DetailPathContainer.Visibility = Visibility.Collapsed;
             DetailAumidContainer.Visibility = Visibility.Collapsed;
+            DetailCommandContainer.Visibility = Visibility.Collapsed;
             DetailEquationContainer.Visibility = Visibility.Visible;
             DetailResultContainer.Visibility = Visibility.Visible;
             DetailEquationText.Text = selectedItem.Path;
@@ -463,15 +473,42 @@ public sealed partial class MainWindow : Window
             ActionLocationGrid.Visibility = Visibility.Collapsed;
             ActionCopyPathGrid.Visibility = Visibility.Collapsed;
         }
+        else if (selectedItem.IsShellCommand)
+        {
+            DetailCalcIcon.Visibility = Visibility.Collapsed;
+            DetailShellIcon.Visibility = Visibility.Visible;
+            DetailAppIcon.Visibility = Visibility.Collapsed;
+            DetailTitleText.Text = "Terminal Command";
+            TypeBadgeText.Text = "Command";
+            TypeBadge.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                Microsoft.UI.ColorHelper.FromArgb(0xFF, 0x0F, 0x76, 0x6E));
+
+            DetailPathContainer.Visibility = Visibility.Collapsed;
+            DetailAumidContainer.Visibility = Visibility.Collapsed;
+            DetailEquationContainer.Visibility = Visibility.Collapsed;
+            DetailResultContainer.Visibility = Visibility.Collapsed;
+            DetailCommandContainer.Visibility = Visibility.Visible;
+            DetailCommandText.Text = selectedItem.ShellCommandText;
+
+            ActionOpenGrid.Visibility = Visibility.Visible;
+            ActionOpenText.Text = "Execute Command";
+            ActionCopyResultGrid.Visibility = Visibility.Collapsed;
+            ActionAdminGrid.Visibility = Visibility.Visible;
+            ActionLocationGrid.Visibility = Visibility.Collapsed;
+            ActionCopyPathGrid.Visibility = Visibility.Visible;
+            ActionCopyPathText.Text = "Copy Command";
+        }
         else
         {
             DetailCalcIcon.Visibility = Visibility.Collapsed;
+            DetailShellIcon.Visibility = Visibility.Collapsed;
             DetailAppIcon.Visibility = Visibility.Visible;
             DetailAppIcon.Source = selectedItem.IconSource;
             DetailTitleText.Text = selectedItem.Name;
 
             DetailEquationContainer.Visibility = Visibility.Collapsed;
             DetailResultContainer.Visibility = Visibility.Collapsed;
+            DetailCommandContainer.Visibility = Visibility.Collapsed;
 
             if (selectedItem.IsUWP)
             {
@@ -671,6 +708,22 @@ public sealed partial class MainWindow : Window
             return;
         }
 
+        if (selected.IsShellCommand)
+        {
+            if (!string.IsNullOrEmpty(selected.ShellCommandText))
+            {
+                _ = Task.Run(() =>
+                {
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo("cmd.exe", $"/k \"{selected.ShellCommandText}\"") { UseShellExecute = true });
+                    }
+                    catch (Exception ex) { Debug.WriteLine($"Command launch failed: {ex.Message}"); }
+                });
+            }
+            return;
+        }
+
         var appItem = new AppItem
         {
             Name = selected.Name,
@@ -690,8 +743,32 @@ public sealed partial class MainWindow : Window
         int index = ResultsListView.SelectedIndex;
         if (index < 0 || index >= _searchResults.Count) return;
         var selected = _searchResults[index];
-        if (selected.IsCalculator || selected.IsUWP || selected.IsHeader) return;
+        if (selected.IsCalculator || selected.IsHeader) return;
+
         ToggleVisibility(false);
+
+        if (selected.IsShellCommand)
+        {
+            if (!string.IsNullOrEmpty(selected.ShellCommandText))
+            {
+                _ = Task.Run(() =>
+                {
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo("cmd.exe", $"/k \"{selected.ShellCommandText}\"")
+                        {
+                            UseShellExecute = true,
+                            Verb = "runas"
+                        });
+                    }
+                    catch (Exception ex) { Debug.WriteLine($"Run command as admin failed: {ex.Message}"); }
+                });
+            }
+            return;
+        }
+
+        if (selected.IsUWP) return;
+
         _ = Task.Run(() =>
         {
             try
@@ -711,7 +788,7 @@ public sealed partial class MainWindow : Window
         int index = ResultsListView.SelectedIndex;
         if (index < 0 || index >= _searchResults.Count) return;
         var selected = _searchResults[index];
-        if (selected.IsCalculator || selected.IsUWP || string.IsNullOrEmpty(selected.Path) || selected.IsHeader) return;
+        if (selected.IsCalculator || selected.IsShellCommand || selected.IsUWP || string.IsNullOrEmpty(selected.Path) || selected.IsHeader) return;
         ToggleVisibility(false);
         _ = Task.Run(() =>
         {
@@ -734,7 +811,8 @@ public sealed partial class MainWindow : Window
         if (selected.IsHeader) return;
 
         string textToCopy = selected.IsCalculator ? selected.CalcResult
-                          : (selected.IsUWP ? selected.AUMID : selected.Path);
+                          : (selected.IsShellCommand ? selected.ShellCommandText
+                          : (selected.IsUWP ? selected.AUMID : selected.Path));
         if (string.IsNullOrEmpty(textToCopy)) return;
 
         var dataPackage = new DataPackage();
@@ -1007,6 +1085,7 @@ public sealed partial class MainWindow : Window
                 _ => 0
             };
 
+            SwitchSettingsTab(true);
             SettingsPanel.Visibility = Visibility.Visible;
             SearchBox.IsEnabled = false; // Disable search while in settings
         }
@@ -1017,6 +1096,18 @@ public sealed partial class MainWindow : Window
             SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
             UpdateSearch(SearchBox.Text);
         }
+    }
+
+    private void SwitchSettingsTab(bool showSettings)
+    {
+        SettingsScrollViewer.Visibility = showSettings ? Visibility.Visible : Visibility.Collapsed;
+        HelpScrollViewer.Visibility = showSettings ? Visibility.Collapsed : Visibility.Visible;
+
+        SettingsTabButton.FontWeight = showSettings ? Microsoft.UI.Text.FontWeights.SemiBold : Microsoft.UI.Text.FontWeights.Normal;
+        SettingsTabButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources[showSettings ? "TextPrimary" : "TextMuted"];
+
+        HelpTabButton.FontWeight = showSettings ? Microsoft.UI.Text.FontWeights.Normal : Microsoft.UI.Text.FontWeights.SemiBold;
+        HelpTabButton.Foreground = (Microsoft.UI.Xaml.Media.Brush)App.Current.Resources[showSettings ? "TextMuted" : "TextPrimary"];
     }
 
     private void ShowPreviewToggle_Toggled(object sender, RoutedEventArgs e)

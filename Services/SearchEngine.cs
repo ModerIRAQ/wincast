@@ -5,7 +5,7 @@ namespace WinCast.Services;
 
 internal static class SearchEngine
 {
-    internal record SearchResult(AppItem Item, int Score, bool IsCalculator = false, string CalcResult = "");
+    internal record SearchResult(AppItem Item, int Score, bool IsCalculator = false, string CalcResult = "", bool IsShellCommand = false, string ShellCommandText = "");
 
     internal static List<SearchResult> Search(List<AppItem> apps, string query)
     {
@@ -16,6 +16,31 @@ internal static class SearchEngine
             int limit = Math.Min(8, apps.Count);
             for (int i = 0; i < limit; i++)
                 results.Add(new SearchResult(apps[i], Score: 1));
+            return results;
+        }
+
+        // Try shell command mode first
+        if (query.StartsWith(">"))
+        {
+            string cmdText = query.Substring(1).TrimStart();
+            if (string.IsNullOrEmpty(cmdText))
+            {
+                results.Add(new SearchResult(
+                    Item: new AppItem { Name = "Enter a command...", Path = "" },
+                    Score: 1000,
+                    IsShellCommand: true,
+                    ShellCommandText: ""
+                ));
+            }
+            else
+            {
+                results.Add(new SearchResult(
+                    Item: new AppItem { Name = cmdText, Path = "Run command: " + cmdText },
+                    Score: 1000,
+                    IsShellCommand: true,
+                    ShellCommandText: cmdText
+                ));
+            }
             return results;
         }
 

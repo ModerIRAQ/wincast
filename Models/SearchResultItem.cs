@@ -11,6 +11,8 @@ public class SearchResultItem
     public bool IsUWP { get; }
     public bool IsCalculator { get; }
     public string CalcResult { get; }
+    public bool IsShellCommand { get; }
+    public string ShellCommandText { get; }
     public SoftwareBitmapSource? IconSource { get; }
     public string Category { get; }
 
@@ -29,7 +31,9 @@ public class SearchResultItem
         bool isCalculator,
         string calcResult,
         SoftwareBitmapSource? iconSource,
-        string category = "Applications")
+        string category = "Applications",
+        bool isShellCommand = false,
+        string shellCommandText = "")
     {
         Name = name;
         Path = path;
@@ -41,6 +45,8 @@ public class SearchResultItem
         Category = category;
         IsHeader = false;
         HeaderText = string.Empty;
+        IsShellCommand = isShellCommand;
+        ShellCommandText = shellCommandText;
     }
 
     // Header-only constructor
@@ -53,6 +59,8 @@ public class SearchResultItem
         HeaderText = headerText;
         Category = string.Empty;
         IsHeader = true;
+        IsShellCommand = false;
+        ShellCommandText = string.Empty;
     }
 
     public static SearchResultItem CreateHeader(string text) => new(text);
@@ -60,8 +68,14 @@ public class SearchResultItem
     public Visibility CalcVisibility =>
         IsCalculator ? Visibility.Visible : Visibility.Collapsed;
 
+    public Visibility ShellVisibility =>
+        IsShellCommand ? Visibility.Visible : Visibility.Collapsed;
+
     public Visibility UwpVisibility =>
         IsCalculator ? Visibility.Collapsed : Visibility.Visible;
+
+    public Visibility ImageVisibility =>
+        (IconSource != null && !IsCalculator && !IsShellCommand) ? Visibility.Visible : Visibility.Collapsed;
 
     public Visibility HeaderVisibility =>
         IsHeader ? Visibility.Visible : Visibility.Collapsed;
@@ -69,5 +83,5 @@ public class SearchResultItem
     public Visibility ContentVisibility =>
         IsHeader ? Visibility.Collapsed : Visibility.Visible;
 
-    public string AppTypeBadge => IsCalculator ? "Calculator" : (IsUWP ? "UWP" : "Win32");
+    public string AppTypeBadge => IsCalculator ? "Calculator" : (IsShellCommand ? "Command" : (IsUWP ? "UWP" : "Win32"));
 }

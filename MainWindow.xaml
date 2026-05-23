@@ -275,10 +275,17 @@
                                                           Visibility="{x:Bind CalcVisibility}"
                                                           HorizontalAlignment="Center"
                                                           VerticalAlignment="Center"/>
+                                                <FontIcon Glyph="&#xE756;"
+                                                          FontFamily="{StaticResource IconFont}"
+                                                          FontSize="20"
+                                                          Foreground="{StaticResource AccentColor}"
+                                                          Visibility="{x:Bind ShellVisibility}"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
                                                 <Image Source="{x:Bind IconSource}"
                                                        Width="28" Height="28"
                                                        Stretch="Uniform"
-                                                       Visibility="{x:Bind UwpVisibility}"
+                                                       Visibility="{x:Bind ImageVisibility}"
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center"/>
                                             </Grid>
@@ -388,6 +395,14 @@
                                               Visibility="Collapsed"
                                               HorizontalAlignment="Center"
                                               VerticalAlignment="Center"/>
+                                    <FontIcon x:Name="DetailShellIcon"
+                                              Glyph="&#xE756;"
+                                              FontFamily="{StaticResource IconFont}"
+                                              FontSize="34"
+                                              Foreground="{StaticResource AccentColor}"
+                                              Visibility="Collapsed"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
                                     <Image x:Name="DetailAppIcon"
                                            Width="48" Height="48"
                                            Stretch="Uniform"/>
@@ -477,6 +492,21 @@
                                            Foreground="{StaticResource AccentColor}"/>
                             </StackPanel>
 
+                            <StackPanel x:Name="DetailCommandContainer" Spacing="5" Visibility="Collapsed">
+                                <TextBlock Text="COMMAND"
+                                           FontSize="9" FontFamily="{StaticResource DisplayFont}"
+                                           FontWeight="SemiBold" CharacterSpacing="150"
+                                           Foreground="{StaticResource TextMuted}"/>
+                                <Border Background="{StaticResource SurfaceCard}" CornerRadius="6"
+                                        Padding="10,7,10,7" BorderBrush="{StaticResource SearchBoxBorder}" BorderThickness="1">
+                                    <TextBlock x:Name="DetailCommandText"
+                                               Text="ipconfig"
+                                               FontSize="11" FontFamily="{StaticResource MonoFont}"
+                                               Foreground="{StaticResource TextSecondary}"
+                                               TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
+                                </Border>
+                            </StackPanel>
+
                         </StackPanel>
                     </ScrollViewer>
 
@@ -493,7 +523,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Open" FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="ActionOpenText" Text="Open" FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
                             <Border Grid.Column="1" Background="{StaticResource SurfaceCard}" BorderBrush="{StaticResource SearchBoxBorder}" BorderThickness="1" CornerRadius="5" Padding="7,3,7,3">
                                 <TextBlock Text="Enter" FontSize="10" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextMuted}"/>
                             </Border>
@@ -537,7 +567,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Copy Path" FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="ActionCopyPathText" Text="Copy Path" FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
                             <Border Grid.Column="1" Background="{StaticResource SurfaceCard}" BorderBrush="{StaticResource SearchBoxBorder}" BorderThickness="1" CornerRadius="5" Padding="7,3,7,3">
                                 <TextBlock Text="Ctrl+C" FontSize="10" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextMuted}"/>
                             </Border>
@@ -571,12 +601,38 @@
                                     <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#252535"/>
                                 </Button.Resources>
                             </Button>
-                            <TextBlock Text="Settings"
-                                       FontSize="18"
-                                       FontFamily="{StaticResource DisplayFont}"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimary}"
-                                       VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal" Spacing="16" Margin="8,0,0,0">
+                                <Button x:Name="SettingsTabButton"
+                                        Content="General"
+                                        FontSize="16"
+                                        FontFamily="{StaticResource DisplayFont}"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource TextPrimary}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="4,4,4,8"
+                                        VerticalAlignment="Center">
+                                    <Button.Resources>
+                                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="Transparent"/>
+                                        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="Transparent"/>
+                                    </Button.Resources>
+                                </Button>
+                                <Button x:Name="HelpTabButton"
+                                        Content="Help &amp; Shortcuts"
+                                        FontSize="16"
+                                        FontFamily="{StaticResource DisplayFont}"
+                                        FontWeight="Normal"
+                                        Foreground="{StaticResource TextMuted}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="4,4,4,8"
+                                        VerticalAlignment="Center">
+                                    <Button.Resources>
+                                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="Transparent"/>
+                                        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="Transparent"/>
+                                    </Button.Resources>
+                                </Button>
+                            </StackPanel>
                         </StackPanel>
                         <TextBlock Grid.Column="1"
                                    Text="ESC to go back"
@@ -587,7 +643,7 @@
                     </Grid>
 
                     <!-- ScrollViewer with Margin to start below the header -->
-                    <ScrollViewer Margin="0,50,0,0" VerticalScrollBarVisibility="Hidden">
+                    <ScrollViewer x:Name="SettingsScrollViewer" Margin="0,50,0,0" VerticalScrollBarVisibility="Hidden">
                         <StackPanel Spacing="20" Margin="0,0,16,0">
 
                             <!-- PREVIEW SECTION CARD -->
@@ -739,6 +795,136 @@
                                 </Grid>
                             </Border>
 
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Help & Documentation ScrollViewer -->
+                    <ScrollViewer x:Name="HelpScrollViewer" Margin="0,50,0,0" VerticalScrollBarVisibility="Hidden" Visibility="Collapsed">
+                        <StackPanel Spacing="20" Margin="0,0,16,0">
+                            <!-- KEYBOARD SHORTCUTS CARD -->
+                            <Border Background="{StaticResource SurfaceCard}"
+                                    BorderBrush="{StaticResource SearchBoxBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="16,14,16,14">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Keyboard Shortcuts"
+                                               FontSize="15"
+                                               FontFamily="{StaticResource DisplayFont}"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource AccentColor}"/>
+                                    
+                                    <Grid ColumnSpacing="16" RowSpacing="10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        
+                                        <!-- Row 0: Toggle Window -->
+                                        <StackPanel Grid.Row="0" Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="Toggle WinCast Window" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock Text="Show or hide the launcher window globally." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
+                                        </StackPanel>
+                                        <Border Grid.Row="0" Grid.Column="1" Background="{StaticResource SearchBoxBorder}" BorderThickness="1" BorderBrush="{StaticResource SearchBoxBorder}" CornerRadius="5" Padding="6,3,6,3" VerticalAlignment="Center">
+                                            <TextBlock Text="Alt + Space" FontSize="11" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextPrimary}"/>
+                                        </Border>
+
+                                        <!-- Row 1: Launch Selected -->
+                                        <StackPanel Grid.Row="1" Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="Launch / Open Selected" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock Text="Execute the highlighted application, command, or calculator result." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
+                                        </StackPanel>
+                                        <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource SearchBoxBorder}" BorderThickness="1" BorderBrush="{StaticResource SearchBoxBorder}" CornerRadius="5" Padding="6,3,6,3" VerticalAlignment="Center">
+                                            <TextBlock Text="Enter" FontSize="11" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextPrimary}"/>
+                                        </Border>
+
+                                        <!-- Row 2: Run as Administrator -->
+                                        <StackPanel Grid.Row="2" Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="Run as Administrator" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock Text="Elevate execution for Win32 apps or Shell commands." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
+                                        </StackPanel>
+                                        <Border Grid.Row="2" Grid.Column="1" Background="{StaticResource SearchBoxBorder}" BorderThickness="1" BorderBrush="{StaticResource SearchBoxBorder}" CornerRadius="5" Padding="6,3,6,3" VerticalAlignment="Center">
+                                            <TextBlock Text="Ctrl + Shift + Enter" FontSize="11" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextPrimary}"/>
+                                        </Border>
+
+                                        <!-- Row 3: Open File Location -->
+                                        <StackPanel Grid.Row="3" Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="Show in File Explorer" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock Text="Reveal the application's executable in File Explorer." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
+                                        </StackPanel>
+                                        <Border Grid.Row="3" Grid.Column="1" Background="{StaticResource SearchBoxBorder}" BorderThickness="1" BorderBrush="{StaticResource SearchBoxBorder}" CornerRadius="5" Padding="6,3,6,3" VerticalAlignment="Center">
+                                            <TextBlock Text="Ctrl + Shift + O" FontSize="11" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextPrimary}"/>
+                                        </Border>
+
+                                        <!-- Row 4: Copy Value -->
+                                        <StackPanel Grid.Row="4" Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="Copy Value / Path / Command" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock Text="Copy the path, calculator output, or shell command string to clipboard." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
+                                        </StackPanel>
+                                        <Border Grid.Row="4" Grid.Column="1" Background="{StaticResource SearchBoxBorder}" BorderThickness="1" BorderBrush="{StaticResource SearchBoxBorder}" CornerRadius="5" Padding="6,3,6,3" VerticalAlignment="Center">
+                                            <TextBlock Text="Ctrl + C" FontSize="11" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextPrimary}"/>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- SHELL COMMAND EXECUTOR CARD -->
+                            <Border Background="{StaticResource SurfaceCard}"
+                                    BorderBrush="{StaticResource SearchBoxBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="16,14,16,14">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Terminal &amp; Shell Commands"
+                                               FontSize="15"
+                                               FontFamily="{StaticResource DisplayFont}"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource AccentColor}"/>
+                                    <TextBlock Text="You can execute arbitrary shell commands directly from the search bar using the prefix: &gt;"
+                                               FontSize="13" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap"/>
+                                    <Border Background="{StaticResource AppBackground}" BorderBrush="{StaticResource SearchBoxBorder}" BorderThickness="1" CornerRadius="6" Padding="12,10,12,10" Margin="0,4,0,4">
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="Example query:" FontSize="10" FontFamily="{StaticResource DisplayFont}" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}"/>
+                                            <TextBlock Text="&gt; ping 8.8.8.8 -t" FontSize="13" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource CyanAccent}"/>
+                                            <TextBlock Text="&gt; ipconfig /all" FontSize="13" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource CyanAccent}"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock Text="• Pressing Enter opens a command prompt window executing the command." FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                                    <TextBlock Text="• Pressing Ctrl+Shift+Enter executes the command as Administrator." FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- CALCULATOR CARD -->
+                            <Border Background="{StaticResource SurfaceCard}"
+                                    BorderBrush="{StaticResource SearchBoxBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="16,14,16,14">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Instant Calculator"
+                                               FontSize="15"
+                                               FontFamily="{StaticResource DisplayFont}"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource AccentColor}"/>
+                                    <TextBlock Text="Type any mathematical expression directly into the search bar. The result will instantly appear."
+                                               FontSize="13" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap"/>
+                                    <Border Background="{StaticResource AppBackground}" BorderBrush="{StaticResource SearchBoxBorder}" BorderThickness="1" CornerRadius="6" Padding="12,10,12,10" Margin="0,4,0,4">
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="Supported operators: +, -, *, /, (, )" FontSize="10" FontFamily="{StaticResource DisplayFont}" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}"/>
+                                            <TextBlock Text="(15 + 25) * 4" FontSize="13" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource AccentColor}"/>
+                                            <TextBlock Text="3.14 * 10 / 2" FontSize="13" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource AccentColor}"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock Text="• Press Enter to instantly copy the calculated result to your clipboard." FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>
