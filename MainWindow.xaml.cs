@@ -364,7 +364,7 @@ public sealed partial class MainWindow : Window
         for (int i = 0; i < count; i++)
         {
             var res = rawResults[i];
-            string category = res.IsCalculator ? "Calculator" : (res.IsShellCommand ? "Command" : "Applications");
+            string category = res.IsCalculator ? "Calculator" : (res.IsShellCommand ? "Command" : (res.IsHelp ? "Help & Shortcuts" : "Applications"));
 
             if (category != lastCategory)
             {
@@ -396,7 +396,9 @@ public sealed partial class MainWindow : Window
                 iconSource,
                 category,
                 res.IsShellCommand,
-                res.ShellCommandText));
+                res.ShellCommandText,
+                res.IsHelp,
+                res.HelpDetail));
         }
 
         // Auto-select first non-header item
@@ -453,6 +455,7 @@ public sealed partial class MainWindow : Window
         {
             DetailCalcIcon.Visibility = Visibility.Visible;
             DetailShellIcon.Visibility = Visibility.Collapsed;
+            DetailHelpIcon.Visibility = Visibility.Collapsed;
             DetailAppIcon.Visibility = Visibility.Collapsed;
             DetailTitleText.Text = "Calculator";
             TypeBadgeText.Text = "Calculator";
@@ -462,6 +465,7 @@ public sealed partial class MainWindow : Window
             DetailPathContainer.Visibility = Visibility.Collapsed;
             DetailAumidContainer.Visibility = Visibility.Collapsed;
             DetailCommandContainer.Visibility = Visibility.Collapsed;
+            DetailHelpContainer.Visibility = Visibility.Collapsed;
             DetailEquationContainer.Visibility = Visibility.Visible;
             DetailResultContainer.Visibility = Visibility.Visible;
             DetailEquationText.Text = selectedItem.Path;
@@ -477,6 +481,7 @@ public sealed partial class MainWindow : Window
         {
             DetailCalcIcon.Visibility = Visibility.Collapsed;
             DetailShellIcon.Visibility = Visibility.Visible;
+            DetailHelpIcon.Visibility = Visibility.Collapsed;
             DetailAppIcon.Visibility = Visibility.Collapsed;
             DetailTitleText.Text = "Terminal Command";
             TypeBadgeText.Text = "Command";
@@ -489,6 +494,7 @@ public sealed partial class MainWindow : Window
             DetailResultContainer.Visibility = Visibility.Collapsed;
             DetailCommandContainer.Visibility = Visibility.Visible;
             DetailCommandText.Text = selectedItem.ShellCommandText;
+            DetailHelpContainer.Visibility = Visibility.Collapsed;
 
             ActionOpenGrid.Visibility = Visibility.Visible;
             ActionOpenText.Text = "Execute Command";
@@ -498,10 +504,37 @@ public sealed partial class MainWindow : Window
             ActionCopyPathGrid.Visibility = Visibility.Visible;
             ActionCopyPathText.Text = "Copy Command";
         }
+        else if (selectedItem.IsHelp)
+        {
+            DetailCalcIcon.Visibility = Visibility.Collapsed;
+            DetailShellIcon.Visibility = Visibility.Collapsed;
+            DetailHelpIcon.Visibility = Visibility.Visible;
+            DetailAppIcon.Visibility = Visibility.Collapsed;
+            DetailTitleText.Text = selectedItem.Name;
+            TypeBadgeText.Text = "Help";
+            TypeBadge.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                Microsoft.UI.ColorHelper.FromArgb(0xFF, 0x8B, 0x7F, 0xF0));
+
+            DetailPathContainer.Visibility = Visibility.Collapsed;
+            DetailAumidContainer.Visibility = Visibility.Collapsed;
+            DetailEquationContainer.Visibility = Visibility.Collapsed;
+            DetailResultContainer.Visibility = Visibility.Collapsed;
+            DetailCommandContainer.Visibility = Visibility.Collapsed;
+            DetailHelpContainer.Visibility = Visibility.Visible;
+            DetailHelpText.Text = selectedItem.HelpDetail;
+
+            ActionOpenGrid.Visibility = Visibility.Visible;
+            ActionOpenText.Text = "Copy Description";
+            ActionCopyResultGrid.Visibility = Visibility.Collapsed;
+            ActionAdminGrid.Visibility = Visibility.Collapsed;
+            ActionLocationGrid.Visibility = Visibility.Collapsed;
+            ActionCopyPathGrid.Visibility = Visibility.Collapsed;
+        }
         else
         {
             DetailCalcIcon.Visibility = Visibility.Collapsed;
             DetailShellIcon.Visibility = Visibility.Collapsed;
+            DetailHelpIcon.Visibility = Visibility.Collapsed;
             DetailAppIcon.Visibility = Visibility.Visible;
             DetailAppIcon.Source = selectedItem.IconSource;
             DetailTitleText.Text = selectedItem.Name;
@@ -509,6 +542,7 @@ public sealed partial class MainWindow : Window
             DetailEquationContainer.Visibility = Visibility.Collapsed;
             DetailResultContainer.Visibility = Visibility.Collapsed;
             DetailCommandContainer.Visibility = Visibility.Collapsed;
+            DetailHelpContainer.Visibility = Visibility.Collapsed;
 
             if (selectedItem.IsUWP)
             {
@@ -708,6 +742,12 @@ public sealed partial class MainWindow : Window
             return;
         }
 
+        if (selected.IsHelp)
+        {
+            CopySelectedPathOrResult();
+            return;
+        }
+
         if (selected.IsShellCommand)
         {
             if (!string.IsNullOrEmpty(selected.ShellCommandText))
@@ -743,7 +783,7 @@ public sealed partial class MainWindow : Window
         int index = ResultsListView.SelectedIndex;
         if (index < 0 || index >= _searchResults.Count) return;
         var selected = _searchResults[index];
-        if (selected.IsCalculator || selected.IsHeader) return;
+        if (selected.IsCalculator || selected.IsHelp || selected.IsHeader) return;
 
         ToggleVisibility(false);
 
@@ -788,7 +828,7 @@ public sealed partial class MainWindow : Window
         int index = ResultsListView.SelectedIndex;
         if (index < 0 || index >= _searchResults.Count) return;
         var selected = _searchResults[index];
-        if (selected.IsCalculator || selected.IsShellCommand || selected.IsUWP || string.IsNullOrEmpty(selected.Path) || selected.IsHeader) return;
+        if (selected.IsCalculator || selected.IsShellCommand || selected.IsHelp || selected.IsUWP || string.IsNullOrEmpty(selected.Path) || selected.IsHeader) return;
         ToggleVisibility(false);
         _ = Task.Run(() =>
         {
@@ -812,7 +852,8 @@ public sealed partial class MainWindow : Window
 
         string textToCopy = selected.IsCalculator ? selected.CalcResult
                           : (selected.IsShellCommand ? selected.ShellCommandText
-                          : (selected.IsUWP ? selected.AUMID : selected.Path));
+                          : (selected.IsHelp ? $"{selected.Name}: {selected.Path}\n{selected.HelpDetail}"
+                          : (selected.IsUWP ? selected.AUMID : selected.Path)));
         if (string.IsNullOrEmpty(textToCopy)) return;
 
         var dataPackage = new DataPackage();

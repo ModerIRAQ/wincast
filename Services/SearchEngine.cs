@@ -5,7 +5,7 @@ namespace WinCast.Services;
 
 internal static class SearchEngine
 {
-    internal record SearchResult(AppItem Item, int Score, bool IsCalculator = false, string CalcResult = "", bool IsShellCommand = false, string ShellCommandText = "");
+    internal record SearchResult(AppItem Item, int Score, bool IsCalculator = false, string CalcResult = "", bool IsShellCommand = false, string ShellCommandText = "", bool IsHelp = false, string HelpDetail = "");
 
     internal static List<SearchResult> Search(List<AppItem> apps, string query)
     {
@@ -17,6 +17,11 @@ internal static class SearchEngine
             for (int i = 0; i < limit; i++)
                 results.Add(new SearchResult(apps[i], Score: 1));
             return results;
+        }
+
+        if (query.StartsWith("?"))
+        {
+            return SearchHelp(query);
         }
 
         // Try shell command mode first
@@ -109,6 +114,35 @@ internal static class SearchEngine
 
         return 0;
     }
+
+    private static List<SearchResult> SearchHelp(string query)
+    {
+        string helpQuery = query[1..].Trim();
+        var helpResults = new List<SearchResult>
+        {
+            new(new AppItem { Name = "Alt + Space", Path = "Toggle WinCast launcher" }, 1000, IsHelp: true, HelpDetail: "Press Alt + Space globally from anywhere in Windows to show or hide the WinCast launcher window."),
+            new(new AppItem { Name = "Enter", Path = "Launch, copy, or execute selected result" }, 950, IsHelp: true, HelpDetail: "Press Enter on any selected search result to launch the application, copy the calculator result, copy help text, or execute the terminal command."),
+            new(new AppItem { Name = "Ctrl + Shift + Enter", Path = "Run selected item as administrator" }, 900, IsHelp: true, HelpDetail: "Press Ctrl + Shift + Enter to run the selected desktop application or shell command with elevated administrative privileges."),
+            new(new AppItem { Name = "Ctrl + Shift + O", Path = "Reveal selected app in File Explorer" }, 850, IsHelp: true, HelpDetail: "Press Ctrl + Shift + O to open File Explorer and highlight the selected application's executable file."),
+            new(new AppItem { Name = "Ctrl + C", Path = "Copy path, result, command, or help text" }, 800, IsHelp: true, HelpDetail: "Press Ctrl + C to copy the selected item's path, AUMID, calculation output, shell command, or help description to the clipboard."),
+            new(new AppItem { Name = "Escape", Path = "Dismiss launcher or close settings" }, 750, IsHelp: true, HelpDetail: "Press Escape to dismiss the WinCast window or close the Settings panel."),
+            new(new AppItem { Name = "> command", Path = "Run a terminal command" }, 700, IsHelp: true, HelpDetail: "Prefix your search query with '>' to enter Shell Command Mode. For example, typing '> ipconfig /all' and pressing Enter executes that command directly in a command prompt window. Use Ctrl + Shift + Enter to elevate it."),
+            new(new AppItem { Name = "Math expression", Path = "Calculate instantly from the search box" }, 650, IsHelp: true, HelpDetail: "Type any basic math expression, such as '(15 + 25) * 4', directly into the search bar. The calculation will instantly show at the top of the results. Press Enter to copy it.")
+        };
+
+        if (string.IsNullOrWhiteSpace(helpQuery))
+            return helpResults;
+
+        return helpResults
+            .Where(result =>
+                ContainsIgnoreCase(result.Item.Name, helpQuery) ||
+                ContainsIgnoreCase(result.Item.Path, helpQuery) ||
+                ContainsIgnoreCase(result.HelpDetail, helpQuery))
+            .ToList();
+    }
+
+    private static bool ContainsIgnoreCase(string value, string query) =>
+        value.Contains(query, StringComparison.OrdinalIgnoreCase);
 
     private static bool TryEvaluateMath(string query, out double result)
     {

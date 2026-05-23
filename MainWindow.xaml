@@ -264,7 +264,8 @@
                                             <!-- Icon -->
                                             <Grid Grid.Column="2"
                                                   Width="38" Height="38"
-                                                  VerticalAlignment="Center">
+                                                  VerticalAlignment="Center"
+                                                  Visibility="{x:Bind ResultIconVisibility}">
                                                 <Border Width="38" Height="38"
                                                         CornerRadius="9"
                                                         Background="{StaticResource SurfaceCard}"/>
@@ -395,6 +396,14 @@
                                               Visibility="Collapsed"
                                               HorizontalAlignment="Center"
                                               VerticalAlignment="Center"/>
+                                    <FontIcon x:Name="DetailHelpIcon"
+                                              Glyph="&#xE897;"
+                                              FontFamily="{StaticResource IconFont}"
+                                              FontSize="34"
+                                              Foreground="{StaticResource AccentColor}"
+                                              Visibility="Collapsed"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
                                     <FontIcon x:Name="DetailShellIcon"
                                               Glyph="&#xE756;"
                                               FontFamily="{StaticResource IconFont}"
@@ -502,6 +511,21 @@
                                     <TextBlock x:Name="DetailCommandText"
                                                Text="ipconfig"
                                                FontSize="11" FontFamily="{StaticResource MonoFont}"
+                                               Foreground="{StaticResource TextSecondary}"
+                                               TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel x:Name="DetailHelpContainer" Spacing="5" Visibility="Collapsed">
+                                <TextBlock Text="HELP &amp; DESCRIPTION"
+                                           FontSize="9" FontFamily="{StaticResource DisplayFont}"
+                                           FontWeight="SemiBold" CharacterSpacing="150"
+                                           Foreground="{StaticResource TextMuted}"/>
+                                <Border Background="{StaticResource SurfaceCard}" CornerRadius="6"
+                                        Padding="12,10,12,10" BorderBrush="{StaticResource SearchBoxBorder}" BorderThickness="1">
+                                    <TextBlock x:Name="DetailHelpText"
+                                               Text="Description of shortcut or feature..."
+                                               FontSize="12" FontFamily="{StaticResource BodyFont}"
                                                Foreground="{StaticResource TextSecondary}"
                                                TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
                                 </Border>

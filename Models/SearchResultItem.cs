@@ -13,6 +13,8 @@ public class SearchResultItem
     public string CalcResult { get; }
     public bool IsShellCommand { get; }
     public string ShellCommandText { get; }
+    public bool IsHelp { get; }
+    public string HelpDetail { get; }
     public SoftwareBitmapSource? IconSource { get; }
     public string Category { get; }
 
@@ -33,7 +35,9 @@ public class SearchResultItem
         SoftwareBitmapSource? iconSource,
         string category = "Applications",
         bool isShellCommand = false,
-        string shellCommandText = "")
+        string shellCommandText = "",
+        bool isHelp = false,
+        string helpDetail = "")
     {
         Name = name;
         Path = path;
@@ -47,6 +51,8 @@ public class SearchResultItem
         HeaderText = string.Empty;
         IsShellCommand = isShellCommand;
         ShellCommandText = shellCommandText;
+        IsHelp = isHelp;
+        HelpDetail = helpDetail;
     }
 
     // Header-only constructor
@@ -61,6 +67,8 @@ public class SearchResultItem
         IsHeader = true;
         IsShellCommand = false;
         ShellCommandText = string.Empty;
+        IsHelp = false;
+        HelpDetail = string.Empty;
     }
 
     public static SearchResultItem CreateHeader(string text) => new(text);
@@ -71,11 +79,17 @@ public class SearchResultItem
     public Visibility ShellVisibility =>
         IsShellCommand ? Visibility.Visible : Visibility.Collapsed;
 
+    public Visibility HelpVisibility =>
+        IsHelp ? Visibility.Visible : Visibility.Collapsed;
+
+    public Visibility ResultIconVisibility =>
+        IsHelp ? Visibility.Collapsed : Visibility.Visible;
+
     public Visibility UwpVisibility =>
-        IsCalculator ? Visibility.Collapsed : Visibility.Visible;
+        (IsCalculator || IsShellCommand) ? Visibility.Collapsed : Visibility.Visible;
 
     public Visibility ImageVisibility =>
-        (IconSource != null && !IsCalculator && !IsShellCommand) ? Visibility.Visible : Visibility.Collapsed;
+        (IconSource != null && !IsCalculator && !IsShellCommand && !IsHelp) ? Visibility.Visible : Visibility.Collapsed;
 
     public Visibility HeaderVisibility =>
         IsHeader ? Visibility.Visible : Visibility.Collapsed;
@@ -83,5 +97,5 @@ public class SearchResultItem
     public Visibility ContentVisibility =>
         IsHeader ? Visibility.Collapsed : Visibility.Visible;
 
-    public string AppTypeBadge => IsCalculator ? "Calculator" : (IsShellCommand ? "Command" : (IsUWP ? "UWP" : "Win32"));
+    public string AppTypeBadge => IsCalculator ? "Calculator" : (IsShellCommand ? "Command" : (IsHelp ? "Help" : (IsUWP ? "UWP" : "Win32")));
 }
