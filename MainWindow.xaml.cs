@@ -25,6 +25,7 @@ public sealed partial class MainWindow : Window
     private bool _scanPending;
     private bool _isVisible = true;
     private bool _isDashboardVisible = true;
+    private bool _isSettingsVisible = false;
     private NativeMethods.SUBCLASSPROC? _subclassDelegate;
 
     private FileSystemWatcher? _userMenuWatcher;
@@ -38,7 +39,15 @@ public sealed partial class MainWindow : Window
         _hwnd = WindowHelper.GetHWND(this);
         WindowHelper.MakeBorderless(_hwnd);
         WindowHelper.CenterWindow(_hwnd, 800, 530);
-        WindowHelper.ApplyBackdrop(this, useAcrylic: false);
+
+        // Apply system backdrop from settings
+        string backdrop = SettingsService.Instance.BackdropType;
+        if (backdrop == "Acrylic")
+            WindowHelper.ApplyBackdrop(this, useAcrylic: true);
+        else if (backdrop == "Mica")
+            WindowHelper.ApplyBackdrop(this, useAcrylic: false);
+        else
+            this.SystemBackdrop = null;
 
         ResultsListView.ItemsSource = _searchResults;
 
@@ -70,6 +79,23 @@ public sealed partial class MainWindow : Window
         StartAppScan();
         SetupStartMenuWatchers();
         SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+
+        // Global Escape key handler for Settings Panel
+        this.Content.KeyDown += (s, e) =>
+        {
+            if (e.Key == Windows.System.VirtualKey.Escape && _isSettingsVisible)
+            {
+                ShowSettings(false);
+                e.Handled = true;
+            }
+        };
+
+        // Bind settings event handlers programmatically
+        SettingsButton.Click += SettingsButton_Click;
+        BackToMainButton.Click += BackToMainButton_Click;
+        ShowPreviewToggle.Toggled += ShowPreviewToggle_Toggled;
+        LaunchOnStartupToggle.Toggled += LaunchOnStartupToggle_Toggled;
+        BackdropComboBox.SelectionChanged += BackdropComboBox_SelectionChanged;
     }
 
     // ═══════════════════════════════════════════════════
@@ -223,7 +249,7 @@ public sealed partial class MainWindow : Window
     {
         if (_isDashboardVisible) return;
         _isDashboardVisible = true;
-        DetailPanel.Visibility = Visibility.Collapsed;
+        SetPreviewPaneVisibility(false);
 
         if (animate)
         {
@@ -324,7 +350,7 @@ public sealed partial class MainWindow : Window
         {
             EmptyResultsPanel.Visibility = Visibility.Visible;
             EmptyResultsText.Text = $"No results for \"{query}\"";
-            DetailPanel.Visibility = Visibility.Collapsed;
+            SetPreviewPaneVisibility(false);
             return;
         }
 
@@ -378,10 +404,11 @@ public sealed partial class MainWindow : Window
                 if (!_searchResults[i].IsHeader) { firstContent = i; break; }
             }
             ResultsListView.SelectedIndex = firstContent;
+            SetPreviewPaneVisibility(true);
         }
         else
         {
-            UpdateDetailPanel();
+            SetPreviewPaneVisibility(false);
         }
     }
 
@@ -408,11 +435,11 @@ public sealed partial class MainWindow : Window
     {
         if (ResultsListView.SelectedItem is not SearchResultItem selectedItem || selectedItem.IsHeader)
         {
-            DetailPanel.Visibility = Visibility.Collapsed;
+            SetPreviewPaneVisibility(false);
             return;
         }
 
-        DetailPanel.Visibility = Visibility.Visible;
+        SetPreviewPaneVisibility(true);
 
         if (selectedItem.IsCalculator)
         {
@@ -765,11 +792,13 @@ public sealed partial class MainWindow : Window
             _isDashboardVisible = false; // force re-show
             RefreshGreeting();
             RefreshRecentItems();
+            SetPreviewPaneVisibility(false);
             ShowDashboard(animate: false);
         }
         else
         {
             _isVisible = false;
+            ShowSettings(false);
             NativeMethods.ShowWindow(_hwnd, NativeMethods.SW_HIDE);
         }
     }
@@ -906,6 +935,7 @@ public sealed partial class MainWindow : Window
         {
             string toggleText = _isVisible ? "Hide WinCast" : "Show WinCast";
             NativeMethods.AppendMenuW(hMenu, NativeMethods.MF_STRING, 1001, toggleText);
+            NativeMethods.AppendMenuW(hMenu, NativeMethods.MF_STRING, 1003, "Settings");
             NativeMethods.AppendMenuW(hMenu, NativeMethods.MF_SEPARATOR, 0, string.Empty);
             NativeMethods.AppendMenuW(hMenu, NativeMethods.MF_STRING, 1002, "Exit");
 
@@ -917,9 +947,108 @@ public sealed partial class MainWindow : Window
                 pt.X, pt.Y, 0, _hwnd, IntPtr.Zero);
 
             if (command == 1001) ToggleVisibility(!_isVisible);
+            else if (command == 1003) OpenSettings();
             else if (command == 1002) this.Close();
         }
         finally { NativeMethods.DestroyMenu(hMenu); }
+    }
+
+    private void OpenSettings()
+    {
+        ToggleVisibility(true);
+        ShowSettings(true);
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  Settings & Preview Visibility Control
+    // ═══════════════════════════════════════════════════
+
+    private void SetPreviewPaneVisibility(bool show)
+    {
+        if (show && SettingsService.Instance.ShowPreview)
+        {
+            DetailColumn.Width = new GridLength(285);
+            VerticalDivider.Visibility = Visibility.Visible;
+            DetailPanel.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            DetailColumn.Width = new GridLength(0);
+            VerticalDivider.Visibility = Visibility.Collapsed;
+            DetailPanel.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void SettingsButton_Click(object sender, RoutedEventArgs e)
+    {
+        ShowSettings(true);
+    }
+
+    private void BackToMainButton_Click(object sender, RoutedEventArgs e)
+    {
+        ShowSettings(false);
+    }
+
+    private void ShowSettings(bool show)
+    {
+        _isSettingsVisible = show;
+        if (show)
+        {
+            _searchCts?.Cancel();
+
+            ShowPreviewToggle.IsOn = SettingsService.Instance.ShowPreview;
+            LaunchOnStartupToggle.IsOn = SettingsService.Instance.LaunchOnStartup;
+
+            BackdropComboBox.SelectedIndex = SettingsService.Instance.BackdropType switch
+            {
+                "Mica" => 0,
+                "Acrylic" => 1,
+                "None" => 2,
+                _ => 0
+            };
+
+            SettingsPanel.Visibility = Visibility.Visible;
+            SearchBox.IsEnabled = false; // Disable search while in settings
+        }
+        else
+        {
+            SettingsPanel.Visibility = Visibility.Collapsed;
+            SearchBox.IsEnabled = true;
+            SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+            UpdateSearch(SearchBox.Text);
+        }
+    }
+
+    private void ShowPreviewToggle_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (ShowPreviewToggle == null) return;
+        SettingsService.Instance.ShowPreview = ShowPreviewToggle.IsOn;
+        SettingsService.Save();
+
+        // Re-evaluate preview visibility based on current state
+        if (!_isDashboardVisible && ResultsListView.SelectedItem != null)
+            SetPreviewPaneVisibility(ShowPreviewToggle.IsOn);
+    }
+
+    private void LaunchOnStartupToggle_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (LaunchOnStartupToggle == null) return;
+        SettingsService.Instance.LaunchOnStartup = LaunchOnStartupToggle.IsOn;
+        SettingsService.Save();
+    }
+
+    private void BackdropComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (BackdropComboBox == null) return;
+        string val = (BackdropComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Mica";
+        if (val == "Solid (None)") val = "None";
+
+        if (SettingsService.Instance.BackdropType != val)
+        {
+            SettingsService.Instance.BackdropType = val;
+            SettingsService.Save();
+            FooterStatusText.Text = "Restart app to apply backdrop";
+        }
     }
 
 }

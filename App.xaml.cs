@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Microsoft.UI.Xaml;
 
 namespace WinCast;
@@ -18,5 +20,11 @@ public partial class App : Application
     {
         _window = new MainWindow();
         _window.Activate();
+
+        if (Environment.GetCommandLineArgs().Contains("--background"))
+        {
+            var hwnd = WindowHelper.GetHWND(_window);
+            NativeMethods.ShowWindow(hwnd, NativeMethods.SW_HIDE);
+        }
     }
 }
