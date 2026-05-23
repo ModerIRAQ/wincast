@@ -75,6 +75,7 @@ public sealed partial class MainWindow : Window
         AddTrayIcon();
         ShowDashboard(animate: false);
         RefreshGreeting();
+        RefreshDashboardStats();
 
         StartAppScan();
         SetupStartMenuWatchers();
@@ -157,6 +158,7 @@ public sealed partial class MainWindow : Window
             IndexingRing.Visibility = Visibility.Visible;
             IndexingRing.IsActive = true;
             FooterStatusText.Text = "Indexing apps…";
+            DashboardStatusText.Text = "Indexing apps";
         });
 
         do
@@ -180,6 +182,7 @@ public sealed partial class MainWindow : Window
                 IndexingRing.Visibility = Visibility.Collapsed;
                 IndexingRing.IsActive = false;
                 FooterStatusText.Text = $"{_apps.Count} apps indexed";
+                RefreshDashboardStats();
                 UpdateSearch(SearchBox.Text);
                 // Re-bind recent items now that we have icons
                 RefreshRecentItems();
@@ -249,9 +252,9 @@ public sealed partial class MainWindow : Window
 
     private void ShowDashboard(bool animate = true)
     {
+        SetPreviewPaneVisibility(false);
         if (_isDashboardVisible) return;
         _isDashboardVisible = true;
-        SetPreviewPaneVisibility(false);
 
         if (animate)
         {
@@ -586,23 +589,42 @@ public sealed partial class MainWindow : Window
     private void RefreshGreeting()
     {
         int hour = DateTime.Now.Hour;
-        string greeting = hour < 12 ? "Good morning ☀️"
-                        : hour < 17 ? "Good afternoon 🌤"
-                        : "Good evening 🌙";
+        string greeting = hour < 12 ? "Good morning"
+                        : hour < 17 ? "Good afternoon"
+                        : "Good evening";
         GreetingText.Text = greeting;
-        GreetingSubText.Text = DateTime.Now.ToString("dddd, MMMM d");
+        GreetingSubText.Text = $"{DateTime.Now:dddd, MMMM d} - search apps, calculate, or run a command.";
+        RefreshDashboardStats();
+    }
+
+    private void RefreshDashboardStats()
+    {
+        DashboardAppCountText.Text = _apps.Count > 0 ? _apps.Count.ToString() : "--";
+        DashboardStatusText.Text = _isScanning
+            ? "Indexing apps"
+            : _apps.Count > 0
+                ? "Ready"
+                : "Waiting for index";
+
+        int recentCount = _recentEntries.Count;
+        RecentSummaryText.Text = recentCount == 0
+            ? "No launches yet"
+            : $"{Math.Min(recentCount, 6)} shown";
     }
 
     private void RefreshRecentItems()
     {
         RecentAppsContainer.Children.Clear();
+        RefreshDashboardStats();
 
         if (_recentEntries.Count == 0)
         {
             RecentAppsSection.Visibility = Visibility.Collapsed;
+            RecentEmptyState.Visibility = Visibility.Visible;
             return;
         }
         RecentAppsSection.Visibility = Visibility.Visible;
+        RecentEmptyState.Visibility = Visibility.Collapsed;
 
         foreach (var entry in _recentEntries.Take(6))
         {
@@ -615,10 +637,11 @@ public sealed partial class MainWindow : Window
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
-                BorderThickness = new Thickness(0),
-                Padding = new Thickness(8, 7, 8, 7),
-                CornerRadius = new CornerRadius(8)
+                Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SurfaceCard"],
+                BorderBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SearchBoxBorder"],
+                BorderThickness = new Thickness(1),
+                Padding = new Thickness(10, 8, 10, 8),
+                CornerRadius = new CornerRadius(9)
             };
 
             var grid = new Grid { ColumnSpacing = 12 };
@@ -629,8 +652,8 @@ public sealed partial class MainWindow : Window
             // Icon container
             var iconBorder = new Border
             {
-                Width = 32, Height = 32,
-                CornerRadius = new CornerRadius(7),
+                Width = 36, Height = 36,
+                CornerRadius = new CornerRadius(8),
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                     Microsoft.UI.ColorHelper.FromArgb(0xFF, 0x1A, 0x1A, 0x24))
             };
@@ -639,7 +662,7 @@ public sealed partial class MainWindow : Window
                 iconBorder.Child = new Image
                 {
                     Source = match.CachedIconSource,
-                    Width = 24, Height = 24,
+                    Width = 26, Height = 26,
                     Stretch = Microsoft.UI.Xaml.Media.Stretch.Uniform
                 };
             }
@@ -649,7 +672,7 @@ public sealed partial class MainWindow : Window
                 {
                     Glyph = "\uE71D",
                     FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)Application.Current.Resources["IconFont"],
-                    FontSize = 14,
+                    FontSize = 16,
                     Foreground = (Microsoft.UI.Xaml.Media.SolidColorBrush)Application.Current.Resources["TextMuted"]
                 };
             }
@@ -661,7 +684,7 @@ public sealed partial class MainWindow : Window
             textStack.Children.Add(new TextBlock
             {
                 Text = entry.Name,
-                FontSize = 13,
+                FontSize = 13.5,
                 FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)Application.Current.Resources["DisplayFont"],
                 FontWeight = Microsoft.UI.Text.FontWeights.Medium,
                 Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextPrimary"],
@@ -669,7 +692,7 @@ public sealed partial class MainWindow : Window
             });
             textStack.Children.Add(new TextBlock
             {
-                Text = entry.IsUWP ? "UWP" : "Win32",
+                Text = entry.IsUWP ? "Store app" : "Desktop app",
                 FontSize = 10,
                 FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)Application.Current.Resources["BodyFont"],
                 Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextMuted"]
@@ -680,9 +703,9 @@ public sealed partial class MainWindow : Window
             // Recent icon
             var recentIcon = new FontIcon
             {
-                Glyph = "\uE81C",
+                Glyph = "\uE8E5",
                 FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)Application.Current.Resources["IconFont"],
-                FontSize = 11,
+                FontSize = 12,
                 Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextMuted"],
                 VerticalAlignment = VerticalAlignment.Center
             };
@@ -708,18 +731,50 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private void SeedSearch(string text, bool selectAll = true)
+    {
+        SearchBox.Text = text;
+        SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+        if (selectAll)
+            SearchBox.SelectAll();
+        else
+            SearchBox.Select(SearchBox.Text.Length, 0);
+    }
+
 
     private void QuickCalcButton_Click(object sender, RoutedEventArgs e)
     {
-        SearchBox.Text = "2 + 2";
-        SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
-        SearchBox.SelectAll();
+        SeedSearch("2 + 2");
     }
 
     private void QuickBrowseButton_Click(object sender, RoutedEventArgs e)
     {
-        SearchBox.Text = " ";
-        SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+        SeedSearch(" ", selectAll: false);
+    }
+
+    private void QuickShellButton_Click(object sender, RoutedEventArgs e)
+    {
+        SeedSearch("> ", selectAll: false);
+    }
+
+    private void QuickHelpButton_Click(object sender, RoutedEventArgs e)
+    {
+        SeedSearch("?");
+    }
+
+    private void ExampleNotepadButton_Click(object sender, RoutedEventArgs e)
+    {
+        SeedSearch("notepad");
+    }
+
+    private void ExampleCalcButton_Click(object sender, RoutedEventArgs e)
+    {
+        SeedSearch("(15 + 25) * 4");
+    }
+
+    private void ExampleShellButton_Click(object sender, RoutedEventArgs e)
+    {
+        SeedSearch("> ipconfig");
     }
 
     // ═══════════════════════════════════════════════════
