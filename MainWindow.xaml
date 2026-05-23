@@ -26,7 +26,6 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <FontIcon Grid.Column="0"
@@ -68,19 +67,6 @@
                               Visibility="Visible"
                               VerticalAlignment="Center"/>
 
-                <Border Grid.Column="3"
-                        Background="{StaticResource SurfaceCard}"
-                        BorderBrush="{StaticResource SearchBoxBorder}"
-                        BorderThickness="1"
-                        CornerRadius="7"
-                        Padding="9,4,9,4"
-                        VerticalAlignment="Center">
-                    <TextBlock Text="Alt + Space"
-                               FontSize="11"
-                               FontFamily="{StaticResource MonoFont}"
-                               FontWeight="Medium"
-                               Foreground="{StaticResource TextMuted}"/>
-                </Border>
             </Grid>
 
             <!-- DIVIDER -->
@@ -966,6 +952,9 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                    <TextBlock Text="Alt + Space Toggle"
+                               FontSize="10" FontFamily="{StaticResource MonoFont}"
+                               Foreground="{StaticResource TextMuted}"/>
                     <TextBlock Text="&#x2191;&#x2193; Navigate"
                                FontSize="10" FontFamily="{StaticResource MonoFont}"
                                Foreground="{StaticResource TextMuted}"/>
