@@ -8,7 +8,9 @@ namespace WinCast.Services;
 internal class AppSettings
 {
     public bool ShowPreview { get; set; } = true;
+    public string ThemeMode { get; set; } = "Dark";
     public string BackdropType { get; set; } = "Mica";
+    public string SurfaceOpacity { get; set; } = "Balanced";
     public bool LaunchOnStartup { get; set; } = false;
 }
 

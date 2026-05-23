@@ -18,6 +18,16 @@
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <EnableMsixTooling>true</EnableMsixTooling>
     <ApplicationIcon>app.ico</ApplicationIcon>
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <InformationalVersion>0.1.0</InformationalVersion>
+    <Product>WinCast</Product>
+    <Authors>ModerIRAQ</Authors>
+    <Company>ModerIRAQ</Company>
+    <Description>Fast Windows launcher with app search, calculator, shell commands, themes, and tray support.</Description>
+    <RepositoryUrl>https://github.com/ModerIRAQ/wincast</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/ModerIRAQ/wincast</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

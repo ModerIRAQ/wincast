@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics.Imaging;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -31,6 +32,8 @@ public sealed partial class MainWindow : Window
     private FileSystemWatcher? _userMenuWatcher;
     private FileSystemWatcher? _commonMenuWatcher;
     private CancellationTokenSource? _debounceCts;
+    private UpdateInfo? _availableUpdate;
+    private bool _isUpdateDownloading;
 
     public MainWindow()
     {
@@ -41,13 +44,7 @@ public sealed partial class MainWindow : Window
         WindowHelper.CenterWindow(_hwnd, 800, 530);
 
         // Apply system backdrop from settings
-        string backdrop = SettingsService.Instance.BackdropType;
-        if (backdrop == "Acrylic")
-            WindowHelper.ApplyBackdrop(this, useAcrylic: true);
-        else if (backdrop == "Mica")
-            WindowHelper.ApplyBackdrop(this, useAcrylic: false);
-        else
-            this.SystemBackdrop = null;
+        ApplyVisualTheme();
 
         ResultsListView.ItemsSource = _searchResults;
 
@@ -96,9 +93,13 @@ public sealed partial class MainWindow : Window
         BackToMainButton.Click += BackToMainButton_Click;
         ShowPreviewToggle.Toggled += ShowPreviewToggle_Toggled;
         LaunchOnStartupToggle.Toggled += LaunchOnStartupToggle_Toggled;
+        ThemeModeComboBox.SelectionChanged += ThemeModeComboBox_SelectionChanged;
         BackdropComboBox.SelectionChanged += BackdropComboBox_SelectionChanged;
+        SurfaceOpacityComboBox.SelectionChanged += SurfaceOpacityComboBox_SelectionChanged;
         SettingsTabButton.Click += (s, e) => SwitchSettingsTab(true);
         HelpTabButton.Click += (s, e) => SwitchSettingsTab(false);
+
+        _ = CheckForUpdatesInBackgroundAsync();
     }
 
     // ═══════════════════════════════════════════════════
@@ -253,6 +254,8 @@ public sealed partial class MainWindow : Window
     private void ShowDashboard(bool animate = true)
     {
         SetPreviewPaneVisibility(false);
+        SettingsPanel.Visibility = Visibility.Collapsed;
+        _isSettingsVisible = false;
         if (_isDashboardVisible) return;
         _isDashboardVisible = true;
 
@@ -291,6 +294,8 @@ public sealed partial class MainWindow : Window
     {
         if (!_isDashboardVisible) return;
         _isDashboardVisible = false;
+        SettingsPanel.Visibility = Visibility.Collapsed;
+        _isSettingsVisible = false;
 
         if (animate)
         {
@@ -1169,28 +1174,57 @@ public sealed partial class MainWindow : Window
         if (show)
         {
             _searchCts?.Cancel();
+            SetPreviewPaneVisibility(false);
+            DashboardPanel.Visibility = Visibility.Collapsed;
+            DashboardPanel.Opacity = 0;
+            ResultsPanel.Visibility = Visibility.Collapsed;
+            ResultsPanel.Opacity = 0;
+            _isDashboardVisible = false;
+            SearchBox.Text = string.Empty;
 
             ShowPreviewToggle.IsOn = SettingsService.Instance.ShowPreview;
             LaunchOnStartupToggle.IsOn = SettingsService.Instance.LaunchOnStartup;
+            CurrentVersionText.Text = $"Current version {UpdateService.CurrentVersion}";
+            UpdateStatusText.Text = "Check GitHub Releases for a newer installer.";
+            DownloadUpdateButton.Visibility = _availableUpdate?.IsUpdateAvailable == true
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            ThemeModeComboBox.SelectedIndex = SettingsService.Instance.ThemeMode switch
+            {
+                "System" => 0,
+                "Dark" => 1,
+                "Light" => 2,
+                _ => 1
+            };
 
             BackdropComboBox.SelectedIndex = SettingsService.Instance.BackdropType switch
             {
                 "Mica" => 0,
                 "Acrylic" => 1,
-                "None" => 2,
+                "None" or "Solid" => 2,
                 _ => 0
+            };
+
+            SurfaceOpacityComboBox.SelectedIndex = SettingsService.Instance.SurfaceOpacity switch
+            {
+                "Subtle" => 0,
+                "Balanced" => 1,
+                "Glass" => 2,
+                _ => 1
             };
 
             SwitchSettingsTab(true);
             SettingsPanel.Visibility = Visibility.Visible;
-            SearchBox.IsEnabled = false; // Disable search while in settings
+            SearchBox.IsEnabled = false;
         }
         else
         {
             SettingsPanel.Visibility = Visibility.Collapsed;
             SearchBox.IsEnabled = true;
             SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
-            UpdateSearch(SearchBox.Text);
+            _isDashboardVisible = false;
+            ShowDashboard(animate: false);
         }
     }
 
@@ -1224,18 +1258,306 @@ public sealed partial class MainWindow : Window
         SettingsService.Save();
     }
 
+    private async void CheckUpdatesButton_Click(object sender, RoutedEventArgs e)
+    {
+        CheckUpdatesButton.IsEnabled = false;
+        DownloadUpdateButton.Visibility = Visibility.Collapsed;
+        UpdateStatusText.Text = "Checking GitHub Releases...";
+
+        try
+        {
+            _availableUpdate = await UpdateService.CheckForUpdatesAsync();
+
+            if (_availableUpdate.IsUpdateAvailable)
+            {
+                UpdateStatusText.Text = $"Version {_availableUpdate.TagName} is available.";
+                SetUpdateAvailable(_availableUpdate);
+            }
+            else
+            {
+                UpdateStatusText.Text = $"You're up to date on version {UpdateService.CurrentVersion}.";
+                ClearAvailableUpdate();
+            }
+        }
+        catch (Exception ex)
+        {
+            UpdateStatusText.Text = $"Update check failed: {ex.Message}";
+        }
+        finally
+        {
+            CheckUpdatesButton.IsEnabled = true;
+        }
+    }
+
+    private async void DownloadUpdateButton_Click(object sender, RoutedEventArgs e)
+    {
+        await DownloadAndInstallUpdateAsync();
+    }
+
+    private async void FooterUpdateButton_Click(object sender, RoutedEventArgs e)
+    {
+        await DownloadAndInstallUpdateAsync();
+    }
+
+    private async Task CheckForUpdatesInBackgroundAsync()
+    {
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
+        try
+        {
+            var update = await UpdateService.CheckForUpdatesAsync();
+            if (update.IsUpdateAvailable)
+                SetUpdateAvailable(update);
+        }
+        catch
+        {
+            // Silent background check: the footer should stay quiet unless an update exists.
+        }
+    }
+
+    private void SetUpdateAvailable(UpdateInfo update)
+    {
+        _availableUpdate = update;
+        FooterUpdateButton.Visibility = Visibility.Visible;
+        FooterUpdateIcon.Visibility = Visibility.Visible;
+        FooterUpdateRing.Visibility = Visibility.Collapsed;
+        FooterUpdateRing.IsActive = false;
+        FooterUpdateButton.IsEnabled = true;
+        DownloadUpdateButton.Visibility = Visibility.Visible;
+        DownloadUpdateButton.IsEnabled = true;
+        FooterStatusText.Text = $"Update {update.TagName} available";
+    }
+
+    private void ClearAvailableUpdate()
+    {
+        _availableUpdate = null;
+        FooterUpdateButton.Visibility = Visibility.Collapsed;
+        DownloadUpdateButton.Visibility = Visibility.Collapsed;
+    }
+
+    private async Task DownloadAndInstallUpdateAsync()
+    {
+        if (_availableUpdate == null || _isUpdateDownloading) return;
+
+        _isUpdateDownloading = true;
+        DownloadUpdateButton.IsEnabled = false;
+        CheckUpdatesButton.IsEnabled = false;
+        FooterUpdateButton.IsEnabled = false;
+        FooterUpdateIcon.Visibility = Visibility.Collapsed;
+        FooterUpdateRing.Visibility = Visibility.Visible;
+        FooterUpdateRing.IsActive = true;
+        UpdateStatusText.Text = $"Downloading {_availableUpdate.InstallerName}...";
+        FooterStatusText.Text = "Downloading update...";
+
+        try
+        {
+            var progress = new Progress<double>(value =>
+            {
+                int percent = Math.Clamp((int)Math.Round(value * 100), 0, 100);
+                UpdateStatusText.Text = $"Downloading update... {percent}%";
+                FooterStatusText.Text = $"Update {percent}%";
+            });
+
+            string installerPath = await UpdateService.DownloadInstallerAsync(_availableUpdate, progress);
+            UpdateStatusText.Text = "Starting installer...";
+            FooterStatusText.Text = "Starting installer...";
+            UpdateService.StartInstallerAndExit(installerPath);
+        }
+        catch (Exception ex)
+        {
+            UpdateStatusText.Text = $"Download failed: {ex.Message}";
+            FooterStatusText.Text = "Update download failed";
+            DownloadUpdateButton.IsEnabled = true;
+            CheckUpdatesButton.IsEnabled = true;
+            FooterUpdateButton.IsEnabled = true;
+            FooterUpdateIcon.Visibility = Visibility.Visible;
+            FooterUpdateRing.Visibility = Visibility.Collapsed;
+            FooterUpdateRing.IsActive = false;
+            _isUpdateDownloading = false;
+        }
+    }
+
+    private void ThemeModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ThemeModeComboBox == null) return;
+        string val = (ThemeModeComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Dark";
+
+        if (SettingsService.Instance.ThemeMode != val)
+        {
+            SettingsService.Instance.ThemeMode = val;
+            SettingsService.Save();
+            ApplyVisualTheme();
+        }
+    }
+
     private void BackdropComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (BackdropComboBox == null) return;
         string val = (BackdropComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Mica";
-        if (val == "Solid (None)") val = "None";
+        if (val == "Solid") val = "None";
 
         if (SettingsService.Instance.BackdropType != val)
         {
             SettingsService.Instance.BackdropType = val;
             SettingsService.Save();
-            FooterStatusText.Text = "Restart app to apply backdrop";
+            ApplyVisualTheme();
         }
+    }
+
+    private void SurfaceOpacityComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (SurfaceOpacityComboBox == null) return;
+        string val = (SurfaceOpacityComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Balanced";
+
+        if (SettingsService.Instance.SurfaceOpacity != val)
+        {
+            SettingsService.Instance.SurfaceOpacity = val;
+            SettingsService.Save();
+            ApplyVisualTheme();
+        }
+    }
+
+    private void ApplyVisualTheme()
+    {
+        var settings = SettingsService.Instance;
+
+        if (Content is FrameworkElement root)
+        {
+            root.RequestedTheme = settings.ThemeMode switch
+            {
+                "Light" => ElementTheme.Light,
+                "System" => ElementTheme.Default,
+                _ => ElementTheme.Dark
+            };
+        }
+
+        if (settings.BackdropType == "Acrylic")
+            WindowHelper.ApplyBackdrop(this, useAcrylic: true);
+        else if (settings.BackdropType == "Mica")
+            WindowHelper.ApplyBackdrop(this, useAcrylic: false);
+        else
+            SystemBackdrop = null;
+
+        bool light = settings.ThemeMode == "Light";
+        byte surfaceAlpha = settings.SurfaceOpacity switch
+        {
+            "Subtle" => (byte)0xF2,
+            "Glass" => (byte)0xB8,
+            _ => (byte)0xD8
+        };
+        byte cardAlpha = settings.SurfaceOpacity switch
+        {
+            "Subtle" => (byte)0xFA,
+            "Glass" => (byte)0xCC,
+            _ => (byte)0xE8
+        };
+        byte footerAlpha = settings.SurfaceOpacity switch
+        {
+            "Subtle" => (byte)0xF5,
+            "Glass" => (byte)0xC8,
+            _ => (byte)0xE0
+        };
+
+        if (settings.BackdropType == "None")
+        {
+            surfaceAlpha = 0xFF;
+            cardAlpha = 0xFF;
+            footerAlpha = 0xFF;
+        }
+
+        if (light)
+            ApplyPalette(
+                app: ColorBrush(surfaceAlpha, 0xF4, 0xF4, 0xF7),
+                card: ColorBrush(cardAlpha, 0xFF, 0xFF, 0xFF),
+                hover: ColorBrush(0xFF, 0xEA, 0xEA, 0xEF),
+                selected: ColorBrush(0xFF, 0xDD, 0xDD, 0xE8),
+                border: ColorBrush(0x88, 0xBA, 0xBA, 0xC6),
+                divider: ColorBrush(0x7A, 0xCC, 0xCC, 0xD6),
+                detail: ColorBrush(footerAlpha, 0xEE, 0xEE, 0xF3),
+                primary: ColorBrush(0xFF, 0x18, 0x18, 0x22),
+                secondary: ColorBrush(0xFF, 0x5E, 0x5E, 0x75),
+                muted: ColorBrush(0xFF, 0x8A, 0x8A, 0xA0));
+        else
+            ApplyPalette(
+                app: ColorBrush(surfaceAlpha, 0x1C, 0x1C, 0x1C),
+                card: ColorBrush(cardAlpha, 0x28, 0x28, 0x28),
+                hover: ColorBrush(0xFF, 0x32, 0x32, 0x32),
+                selected: ColorBrush(0xFF, 0x3C, 0x3C, 0x3C),
+                border: ColorBrush(0xAA, 0x30, 0x30, 0x30),
+                divider: ColorBrush(0x90, 0x2A, 0x2A, 0x2A),
+                detail: ColorBrush(footerAlpha, 0x18, 0x18, 0x18),
+                primary: ColorBrush(0xFF, 0xF0, 0xF0, 0xFA),
+                secondary: ColorBrush(0xFF, 0x88, 0x88, 0xAA),
+                muted: ColorBrush(0xFF, 0x55, 0x55, 0x6A));
+
+        RootSurface.Background = CreateRootSurfaceBrush(settings, light, surfaceAlpha);
+        RootSurface.BorderBrush = (Brush)App.Current.Resources["SearchBoxBorder"];
+        FooterStatusText.Text = "Theme applied";
+    }
+
+    private static SolidColorBrush ColorBrush(byte a, byte r, byte g, byte b)
+        => new(Microsoft.UI.ColorHelper.FromArgb(a, r, g, b));
+
+    private static Brush CreateRootSurfaceBrush(AppSettings settings, bool light, byte surfaceAlpha)
+    {
+        if (settings.BackdropType == "Acrylic")
+        {
+            double tintOpacity = settings.SurfaceOpacity switch
+            {
+                "Subtle" => 0.82,
+                "Glass" => 0.36,
+                _ => 0.58
+            };
+
+            return new AcrylicBrush
+            {
+                TintColor = light
+                    ? Microsoft.UI.ColorHelper.FromArgb(0xFF, 0xF6, 0xF6, 0xFA)
+                    : Microsoft.UI.ColorHelper.FromArgb(0xFF, 0x18, 0x18, 0x1F),
+                TintOpacity = tintOpacity,
+                FallbackColor = light
+                    ? Microsoft.UI.ColorHelper.FromArgb(surfaceAlpha, 0xF4, 0xF4, 0xF7)
+                    : Microsoft.UI.ColorHelper.FromArgb(surfaceAlpha, 0x1C, 0x1C, 0x1C)
+            };
+        }
+
+        return (Brush)App.Current.Resources["AppBackground"];
+    }
+
+    private static void ApplyPalette(
+        SolidColorBrush app,
+        SolidColorBrush card,
+        SolidColorBrush hover,
+        SolidColorBrush selected,
+        SolidColorBrush border,
+        SolidColorBrush divider,
+        SolidColorBrush detail,
+        SolidColorBrush primary,
+        SolidColorBrush secondary,
+        SolidColorBrush muted)
+    {
+        SetBrushResource("AppBackground", app);
+        SetBrushResource("SurfaceBase", app);
+        SetBrushResource("SurfaceCard", card);
+        SetBrushResource("SurfaceHover", hover);
+        SetBrushResource("SurfaceSelected", selected);
+        SetBrushResource("SearchBoxBorder", border);
+        SetBrushResource("DividerBrush", divider);
+        SetBrushResource("DetailPaneBackground", detail);
+        SetBrushResource("SearchBoxBackground", app);
+        SetBrushResource("ItemHoverBackground", hover);
+        SetBrushResource("ItemActiveBackground", selected);
+        SetBrushResource("TextPrimary", primary);
+        SetBrushResource("TextSecondary", secondary);
+        SetBrushResource("TextMuted", muted);
+    }
+
+    private static void SetBrushResource(string key, SolidColorBrush brush)
+    {
+        if (App.Current.Resources[key] is SolidColorBrush existing)
+            existing.Color = brush.Color;
+        else
+            App.Current.Resources[key] = brush;
     }
 
 }

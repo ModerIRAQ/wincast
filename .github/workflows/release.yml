@@ -1,0 +1,113 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-installer:
+    name: Build installer
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $version = "${{ github.ref_name }}".TrimStart("v")
+          } else {
+            [xml]$project = Get-Content .\WinCast.csproj
+            $version = $project.Project.PropertyGroup.Version | Select-Object -First 1
+            if ([string]::IsNullOrWhiteSpace($version)) {
+              throw "WinCast.csproj does not contain a <Version> value."
+            }
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+
+      - name: Create version tag
+        if: github.ref_type != 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          git fetch --tags
+          if (git rev-parse "$tag" 2>$null) {
+            Write-Host "Tag $tag already exists. Continuing with existing tag."
+          } else {
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a $tag -m "WinCast $tag"
+            git push origin $tag
+          }
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore .\WinCast.csproj -p:Platform=x64
+
+      - name: Publish
+        run: >
+          dotnet publish .\WinCast.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:Platform=x64
+          -p:Version=${{ steps.version.outputs.version }}
+          -p:AssemblyVersion=${{ steps.version.outputs.version }}.0
+          -p:FileVersion=${{ steps.version.outputs.version }}.0
+          -p:InformationalVersion=${{ steps.version.outputs.version }}
+          -p:PublishDir="${{ github.workspace }}\artifacts\publish\win-x64\"
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts\installer | Out-Null
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer\WinCast.iss /DAppVersion=${{ steps.version.outputs.version }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WinCastSetup-x64-v${{ steps.version.outputs.version }}
+          path: artifacts/installer/WinCastSetup-x64-v${{ steps.version.outputs.version }}.exe
+
+      - name: Create GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          $installer = "artifacts/installer/WinCastSetup-x64-v${{ steps.version.outputs.version }}.exe"
+          if (gh release view $tag --repo "${{ github.repository }}" *> $null) {
+            Write-Host "Release $tag already exists. Uploading installer asset."
+            gh release upload $tag $installer `
+              --repo "${{ github.repository }}" `
+              --clobber
+            exit 0
+          }
+          gh release create $tag $installer `
+            --repo "${{ github.repository }}" `
+            --title "WinCast $tag" `
+            --notes "See CHANGELOG.md for release notes." `
+            --verify-tag

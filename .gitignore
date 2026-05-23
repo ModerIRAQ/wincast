@@ -22,9 +22,13 @@ build/
 **/obj/
 AppPackages/
 BundleArtifacts/
+artifacts/
 
 # User-specific files
 *.usersecrets
 *.suo
 *.user
 *.userprefs
+
+# Local diagnostics
+pretty_output.json
