@@ -112,6 +112,12 @@ internal static class NativeMethods
     [DllImport("gdi32.dll")]
     internal static extern bool DeleteObject(IntPtr hObject);
 
+    [DllImport("gdi32.dll")]
+    internal static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool bRedraw);
+
     // ========== shell32.dll ==========
 
     [DllImport("shell32.dll", CharSet = CharSet.Unicode)]

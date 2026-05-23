@@ -67,7 +67,20 @@ internal static class WindowHelper
             int x = monitorInfo.rcWork.Left + (workWidth - width) / 2;
             int y = monitorInfo.rcWork.Top + (workHeight - height) / 3;
             NativeMethods.SetWindowPos(hwnd, NativeMethods.HWND_TOPMOST, x, y, width, height, NativeMethods.SWP_SHOWWINDOW);
+            ApplyRoundedRegion(hwnd, width, height);
         }
+    }
+
+    private static void ApplyRoundedRegion(IntPtr hwnd, int width, int height)
+    {
+        if (hwnd == IntPtr.Zero || width <= 0 || height <= 0) return;
+
+        const int radius = 28;
+        IntPtr region = NativeMethods.CreateRoundRectRgn(0, 0, width + 1, height + 1, radius, radius);
+        if (region == IntPtr.Zero) return;
+
+        if (NativeMethods.SetWindowRgn(hwnd, region, true) == 0)
+            NativeMethods.DeleteObject(region);
     }
 
     internal static void ApplyBackdrop(Window window, bool useAcrylic = false)

@@ -11,7 +11,7 @@
     <Border BorderBrush="{StaticResource SearchBoxBorder}"
             BorderThickness="1"
             CornerRadius="14"
-            Background="Transparent">
+            Background="{StaticResource AppBackground}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
