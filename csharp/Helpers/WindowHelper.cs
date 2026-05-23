@@ -1,3 +1,5 @@
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 
@@ -13,6 +15,15 @@ internal static class WindowHelper
     internal static void MakeBorderless(IntPtr hwnd)
     {
         if (hwnd == IntPtr.Zero) return;
+
+        // Use WinUI 3 AppWindow to disable the default border and title bar
+        var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        if (appWindow.Presenter is OverlappedPresenter presenter)
+        {
+            presenter.SetBorderAndTitleBar(false, false);
+            presenter.IsResizable = false;
+        }
 
         long style = NativeMethods.GetWindowLongPtrW(hwnd, NativeMethods.GWL_STYLE).ToInt64();
         style &= ~(NativeMethods.WS_CAPTION | NativeMethods.WS_THICKFRAME |
