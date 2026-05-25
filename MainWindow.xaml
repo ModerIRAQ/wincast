@@ -192,7 +192,7 @@
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
                                             <FontIcon Grid.Column="0"
-                                                      Glyph="&#xE1D6;"
+                                                      Glyph="&#xE8EF;"
                                                       FontFamily="{StaticResource IconFont}"
                                                       FontSize="20"
                                                       Foreground="{StaticResource AccentColor}"
@@ -485,7 +485,7 @@
                                                 <Border Width="38" Height="38"
                                                         CornerRadius="9"
                                                         Background="{StaticResource SurfaceCard}"/>
-                                                <FontIcon Glyph="&#xE1D6;"
+                                                <FontIcon Glyph="&#xE8EF;"
                                                           FontFamily="{StaticResource IconFont}"
                                                           FontSize="20"
                                                           Foreground="{StaticResource AccentColor}"
@@ -606,7 +606,7 @@
                                     BorderThickness="1">
                                 <Grid>
                                     <FontIcon x:Name="DetailCalcIcon"
-                                              Glyph="&#xE1D6;"
+                                              Glyph="&#xE8EF;"
                                               FontFamily="{StaticResource IconFont}"
                                               FontSize="34"
                                               Foreground="{StaticResource AccentColor}"
