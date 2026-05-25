@@ -406,7 +406,12 @@ public sealed partial class MainWindow : Window
                 res.IsShellCommand,
                 res.ShellCommandText,
                 res.IsHelp,
-                res.HelpDetail));
+                res.HelpDetail,
+                res.IsSystemCommand,
+                res.SystemAction,
+                res.IsWebUrl,
+                res.WebUrl,
+                res.IsWebSearch));
         }
 
         // Auto-select first non-header item
