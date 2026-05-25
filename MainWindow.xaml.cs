@@ -459,12 +459,18 @@ public sealed partial class MainWindow : Window
         ActionOpenText.Text = "Open";
         ActionCopyPathText.Text = "Copy Path";
 
+        // Reset all detail icon visibilities
+        DetailCalcIcon.Visibility = Visibility.Collapsed;
+        DetailHelpIcon.Visibility = Visibility.Collapsed;
+        DetailShellIcon.Visibility = Visibility.Collapsed;
+        DetailSystemIcon.Visibility = Visibility.Collapsed;
+        DetailWebIcon.Visibility = Visibility.Collapsed;
+        DetailSearchIcon.Visibility = Visibility.Collapsed;
+        DetailAppIcon.Visibility = Visibility.Collapsed;
+
         if (selectedItem.IsCalculator)
         {
             DetailCalcIcon.Visibility = Visibility.Visible;
-            DetailShellIcon.Visibility = Visibility.Collapsed;
-            DetailHelpIcon.Visibility = Visibility.Collapsed;
-            DetailAppIcon.Visibility = Visibility.Collapsed;
             DetailTitleText.Text = "Calculator";
             TypeBadgeText.Text = "Calculator";
             TypeBadge.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
@@ -487,10 +493,7 @@ public sealed partial class MainWindow : Window
         }
         else if (selectedItem.IsShellCommand)
         {
-            DetailCalcIcon.Visibility = Visibility.Collapsed;
             DetailShellIcon.Visibility = Visibility.Visible;
-            DetailHelpIcon.Visibility = Visibility.Collapsed;
-            DetailAppIcon.Visibility = Visibility.Collapsed;
             DetailTitleText.Text = "Terminal Command";
             TypeBadgeText.Text = "Command";
             TypeBadge.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
@@ -514,10 +517,7 @@ public sealed partial class MainWindow : Window
         }
         else if (selectedItem.IsHelp)
         {
-            DetailCalcIcon.Visibility = Visibility.Collapsed;
-            DetailShellIcon.Visibility = Visibility.Collapsed;
             DetailHelpIcon.Visibility = Visibility.Visible;
-            DetailAppIcon.Visibility = Visibility.Collapsed;
             DetailTitleText.Text = selectedItem.Name;
             TypeBadgeText.Text = "Help";
             TypeBadge.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
@@ -538,11 +538,79 @@ public sealed partial class MainWindow : Window
             ActionLocationGrid.Visibility = Visibility.Collapsed;
             ActionCopyPathGrid.Visibility = Visibility.Collapsed;
         }
+        else if (selectedItem.IsWebUrl)
+        {
+            DetailWebIcon.Visibility = Visibility.Visible;
+            DetailTitleText.Text = selectedItem.Name;
+            TypeBadgeText.Text = "Web";
+            TypeBadge.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                Microsoft.UI.ColorHelper.FromArgb(0xFF, 0x03, 0x69, 0xA1));
+
+            DetailPathContainer.Visibility = Visibility.Visible;
+            DetailPathText.Text = selectedItem.WebUrl;
+            DetailAumidContainer.Visibility = Visibility.Collapsed;
+            DetailEquationContainer.Visibility = Visibility.Collapsed;
+            DetailResultContainer.Visibility = Visibility.Collapsed;
+            DetailCommandContainer.Visibility = Visibility.Collapsed;
+            DetailHelpContainer.Visibility = Visibility.Collapsed;
+
+            ActionOpenGrid.Visibility = Visibility.Visible;
+            ActionOpenText.Text = "Open Link";
+            ActionCopyResultGrid.Visibility = Visibility.Collapsed;
+            ActionAdminGrid.Visibility = Visibility.Collapsed;
+            ActionLocationGrid.Visibility = Visibility.Collapsed;
+            ActionCopyPathGrid.Visibility = Visibility.Visible;
+            ActionCopyPathText.Text = "Copy URL";
+        }
+        else if (selectedItem.IsWebSearch)
+        {
+            DetailSearchIcon.Visibility = Visibility.Visible;
+            DetailTitleText.Text = selectedItem.Name;
+            TypeBadgeText.Text = "Search";
+            TypeBadge.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                Microsoft.UI.ColorHelper.FromArgb(0xFF, 0xD9, 0x77, 0x06));
+
+            DetailPathContainer.Visibility = Visibility.Visible;
+            DetailPathText.Text = selectedItem.Path;
+            DetailAumidContainer.Visibility = Visibility.Collapsed;
+            DetailEquationContainer.Visibility = Visibility.Collapsed;
+            DetailResultContainer.Visibility = Visibility.Collapsed;
+            DetailCommandContainer.Visibility = Visibility.Collapsed;
+            DetailHelpContainer.Visibility = Visibility.Collapsed;
+
+            ActionOpenGrid.Visibility = Visibility.Visible;
+            ActionOpenText.Text = "Search Google";
+            ActionCopyResultGrid.Visibility = Visibility.Collapsed;
+            ActionAdminGrid.Visibility = Visibility.Collapsed;
+            ActionLocationGrid.Visibility = Visibility.Collapsed;
+            ActionCopyPathGrid.Visibility = Visibility.Visible;
+            ActionCopyPathText.Text = "Copy URL";
+        }
+        else if (selectedItem.IsSystemCommand)
+        {
+            DetailSystemIcon.Visibility = Visibility.Visible;
+            DetailTitleText.Text = selectedItem.Name;
+            TypeBadgeText.Text = "System";
+            TypeBadge.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                Microsoft.UI.ColorHelper.FromArgb(0xFF, 0xBE, 0x12, 0x3C));
+
+            DetailPathContainer.Visibility = Visibility.Visible;
+            DetailPathText.Text = selectedItem.Path;
+            DetailAumidContainer.Visibility = Visibility.Collapsed;
+            DetailEquationContainer.Visibility = Visibility.Collapsed;
+            DetailResultContainer.Visibility = Visibility.Collapsed;
+            DetailCommandContainer.Visibility = Visibility.Collapsed;
+            DetailHelpContainer.Visibility = Visibility.Collapsed;
+
+            ActionOpenGrid.Visibility = Visibility.Visible;
+            ActionOpenText.Text = "Execute Command";
+            ActionCopyResultGrid.Visibility = Visibility.Collapsed;
+            ActionAdminGrid.Visibility = Visibility.Collapsed;
+            ActionLocationGrid.Visibility = Visibility.Collapsed;
+            ActionCopyPathGrid.Visibility = Visibility.Collapsed;
+        }
         else
         {
-            DetailCalcIcon.Visibility = Visibility.Collapsed;
-            DetailShellIcon.Visibility = Visibility.Collapsed;
-            DetailHelpIcon.Visibility = Visibility.Collapsed;
             DetailAppIcon.Visibility = Visibility.Visible;
             DetailAppIcon.Source = selectedItem.IconSource;
             DetailTitleText.Text = selectedItem.Name;
@@ -557,7 +625,6 @@ public sealed partial class MainWindow : Window
                 TypeBadgeText.Text = "UWP";
                 TypeBadge.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                     Microsoft.UI.ColorHelper.FromArgb(0xFF, 0x0E, 0x74, 0x90));
-                // UWP app — no subtitle text element in XAML
                 DetailPathContainer.Visibility = Visibility.Collapsed;
                 DetailAumidContainer.Visibility = Visibility.Visible;
                 DetailAumidText.Text = selectedItem.AUMID;
@@ -573,7 +640,6 @@ public sealed partial class MainWindow : Window
                 TypeBadgeText.Text = "Win32";
                 TypeBadge.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                     Microsoft.UI.ColorHelper.FromArgb(0xFF, 0x2E, 0x22, 0x70));
-                // Win32 app — no subtitle text element in XAML
                 DetailPathContainer.Visibility = Visibility.Visible;
                 DetailPathText.Text = selectedItem.Path;
                 DetailAumidContainer.Visibility = Visibility.Collapsed;
@@ -587,9 +653,120 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    // ═══════════════════════════════════════════════════
-    //  Recent Apps Dashboard
-    // ═══════════════════════════════════════════════════
+    private void ResultsListView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        if (args.InRecycleQueue)
+        {
+            args.ItemContainer.Opacity = 1;
+            args.ItemContainer.RenderTransform = null;
+            return;
+        }
+
+        if (args.Phase == 0)
+        {
+            var container = args.ItemContainer;
+            int index = args.ItemIndex;
+
+            if (index < 8)
+            {
+                container.Opacity = 0;
+                var transform = new CompositeTransform { TranslateY = 8 };
+                container.RenderTransform = transform;
+
+                var sb = new Storyboard();
+
+                var opacityAnim = new DoubleAnimation
+                {
+                    From = 0,
+                    To = 1,
+                    Duration = new Duration(TimeSpan.FromMilliseconds(150)),
+                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+                };
+                Storyboard.SetTarget(opacityAnim, container);
+                Storyboard.SetTargetProperty(opacityAnim, "Opacity");
+                sb.Children.Add(opacityAnim);
+
+                var translateAnim = new DoubleAnimation
+                {
+                    From = 8,
+                    To = 0,
+                    Duration = new Duration(TimeSpan.FromMilliseconds(180)),
+                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+                };
+                Storyboard.SetTarget(translateAnim, transform);
+                Storyboard.SetTargetProperty(translateAnim, "TranslateY");
+                sb.Children.Add(translateAnim);
+
+                sb.BeginTime = TimeSpan.FromMilliseconds(index * 35);
+                sb.Begin();
+            }
+            else
+            {
+                container.Opacity = 1;
+                container.RenderTransform = null;
+            }
+        }
+    }
+
+    private async Task ExecuteSystemCommandAsync(SearchResultItem selected)
+    {
+        bool isDestructive = selected.SystemAction is "shutdown" or "restart" or "signout" or "emptybin";
+        if (isDestructive)
+        {
+            ContentDialog confirmDialog = new ContentDialog
+            {
+                Title = $"{selected.Name}?",
+                Content = $"Are you sure you want to perform this action: {selected.Name}?",
+                PrimaryButtonText = selected.Name,
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = this.Content.XamlRoot
+            };
+
+            var res = await confirmDialog.ShowAsync();
+            if (res != ContentDialogResult.Primary)
+            {
+                return;
+            }
+        }
+
+        ToggleVisibility(false);
+
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                switch (selected.SystemAction)
+                {
+                    case "sleep":
+                        NativeMethods.SetSuspendState(false, true, true);
+                        break;
+                    case "shutdown":
+                        Process.Start(new ProcessStartInfo("shutdown.exe", "/s /t 0") { CreateNoWindow = true, UseShellExecute = false });
+                        break;
+                    case "restart":
+                        Process.Start(new ProcessStartInfo("shutdown.exe", "/r /t 0") { CreateNoWindow = true, UseShellExecute = false });
+                        break;
+                    case "lock":
+                        NativeMethods.LockWorkStation();
+                        break;
+                    case "signout":
+                        Process.Start(new ProcessStartInfo("logoff.exe") { CreateNoWindow = true, UseShellExecute = false });
+                        break;
+                    case "emptybin":
+                        NativeMethods.SHEmptyRecycleBin(IntPtr.Zero, null, NativeMethods.SHERB_NOCONFIRMATION | NativeMethods.SHERB_NOPROGRESSUI | NativeMethods.SHERB_NOSOUND);
+                        break;
+                    case "screenoff":
+                        NativeMethods.SendMessage(NativeMethods.HWND_BROADCAST, NativeMethods.WM_SYSCOMMAND, new IntPtr(NativeMethods.SC_MONITORPOWER), new IntPtr(2));
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"System command execution failed: {ex.Message}");
+            }
+        });
+    }
 
     private void RefreshGreeting()
     {
@@ -794,17 +971,51 @@ public sealed partial class MainWindow : Window
         var selected = _searchResults[index];
         if (selected.IsHeader) return;
 
-        ToggleVisibility(false);
-
         if (selected.IsCalculator)
         {
+            ToggleVisibility(false);
             CopySelectedPathOrResult();
             return;
         }
 
         if (selected.IsHelp)
         {
+            ToggleVisibility(false);
             CopySelectedPathOrResult();
+            return;
+        }
+
+        if (selected.IsWebUrl)
+        {
+            ToggleVisibility(false);
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo(selected.WebUrl) { UseShellExecute = true });
+                }
+                catch (Exception ex) { Debug.WriteLine($"Web URL launch failed: {ex.Message}"); }
+            });
+            return;
+        }
+
+        if (selected.IsWebSearch)
+        {
+            ToggleVisibility(false);
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo(selected.Path) { UseShellExecute = true });
+                }
+                catch (Exception ex) { Debug.WriteLine($"Web search launch failed: {ex.Message}"); }
+            });
+            return;
+        }
+
+        if (selected.IsSystemCommand)
+        {
+            _ = ExecuteSystemCommandAsync(selected);
             return;
         }
 
@@ -812,6 +1023,7 @@ public sealed partial class MainWindow : Window
         {
             if (!string.IsNullOrEmpty(selected.ShellCommandText))
             {
+                ToggleVisibility(false);
                 _ = Task.Run(() =>
                 {
                     try
@@ -823,6 +1035,8 @@ public sealed partial class MainWindow : Window
             }
             return;
         }
+
+        ToggleVisibility(false);
 
         var appItem = new AppItem
         {
@@ -843,14 +1057,13 @@ public sealed partial class MainWindow : Window
         int index = ResultsListView.SelectedIndex;
         if (index < 0 || index >= _searchResults.Count) return;
         var selected = _searchResults[index];
-        if (selected.IsCalculator || selected.IsHelp || selected.IsHeader) return;
-
-        ToggleVisibility(false);
+        if (selected.IsCalculator || selected.IsHelp || selected.IsHeader || selected.IsSystemCommand || selected.IsWebUrl || selected.IsWebSearch) return;
 
         if (selected.IsShellCommand)
         {
             if (!string.IsNullOrEmpty(selected.ShellCommandText))
             {
+                ToggleVisibility(false);
                 _ = Task.Run(() =>
                 {
                     try
@@ -869,6 +1082,7 @@ public sealed partial class MainWindow : Window
 
         if (selected.IsUWP) return;
 
+        ToggleVisibility(false);
         _ = Task.Run(() =>
         {
             try
@@ -888,7 +1102,7 @@ public sealed partial class MainWindow : Window
         int index = ResultsListView.SelectedIndex;
         if (index < 0 || index >= _searchResults.Count) return;
         var selected = _searchResults[index];
-        if (selected.IsCalculator || selected.IsShellCommand || selected.IsHelp || selected.IsUWP || string.IsNullOrEmpty(selected.Path) || selected.IsHeader) return;
+        if (selected.IsCalculator || selected.IsShellCommand || selected.IsHelp || selected.IsUWP || string.IsNullOrEmpty(selected.Path) || selected.IsHeader || selected.IsSystemCommand || selected.IsWebUrl || selected.IsWebSearch) return;
         ToggleVisibility(false);
         _ = Task.Run(() =>
         {
@@ -913,7 +1127,9 @@ public sealed partial class MainWindow : Window
         string textToCopy = selected.IsCalculator ? selected.CalcResult
                           : (selected.IsShellCommand ? selected.ShellCommandText
                           : (selected.IsHelp ? $"{selected.Name}: {selected.Path}\n{selected.HelpDetail}"
-                          : (selected.IsUWP ? selected.AUMID : selected.Path)));
+                          : (selected.IsWebUrl ? selected.WebUrl
+                          : (selected.IsWebSearch ? selected.Path
+                          : (selected.IsUWP ? selected.AUMID : selected.Path)))));
         if (string.IsNullOrEmpty(textToCopy)) return;
 
         var dataPackage = new DataPackage();
@@ -925,10 +1141,6 @@ public sealed partial class MainWindow : Window
         _ = Task.Delay(1800).ContinueWith(_ =>
             DispatcherQueue.TryEnqueue(() => FooterStatusText.Text = prev));
     }
-
-    // ═══════════════════════════════════════════════════
-    //  Keyboard Handling
-    // ═══════════════════════════════════════════════════
 
     private static bool IsKeyPressed(int vk)
         => (NativeMethods.GetKeyState(vk) & 0x8000) != 0;

@@ -18,6 +18,15 @@ public class SearchResultItem
     public SoftwareBitmapSource? IconSource { get; }
     public string Category { get; }
 
+    // System commands (sleep, shutdown, lock, etc.)
+    public bool IsSystemCommand { get; }
+    public string SystemAction { get; }
+
+    // Web URL detection and web search fallback
+    public bool IsWebUrl { get; }
+    public string WebUrl { get; }
+    public bool IsWebSearch { get; }
+
     // For category header rows injected into the list
     public bool IsHeader { get; }
     public string HeaderText { get; }
@@ -37,7 +46,12 @@ public class SearchResultItem
         bool isShellCommand = false,
         string shellCommandText = "",
         bool isHelp = false,
-        string helpDetail = "")
+        string helpDetail = "",
+        bool isSystemCommand = false,
+        string systemAction = "",
+        bool isWebUrl = false,
+        string webUrl = "",
+        bool isWebSearch = false)
     {
         Name = name;
         Path = path;
@@ -53,6 +67,11 @@ public class SearchResultItem
         ShellCommandText = shellCommandText;
         IsHelp = isHelp;
         HelpDetail = helpDetail;
+        IsSystemCommand = isSystemCommand;
+        SystemAction = systemAction;
+        IsWebUrl = isWebUrl;
+        WebUrl = webUrl;
+        IsWebSearch = isWebSearch;
     }
 
     // Header-only constructor
@@ -69,6 +88,11 @@ public class SearchResultItem
         ShellCommandText = string.Empty;
         IsHelp = false;
         HelpDetail = string.Empty;
+        IsSystemCommand = false;
+        SystemAction = string.Empty;
+        IsWebUrl = false;
+        WebUrl = string.Empty;
+        IsWebSearch = false;
     }
 
     public static SearchResultItem CreateHeader(string text) => new(text);
@@ -82,14 +106,26 @@ public class SearchResultItem
     public Visibility HelpVisibility =>
         IsHelp ? Visibility.Visible : Visibility.Collapsed;
 
+    public Visibility SystemCommandVisibility =>
+        IsSystemCommand ? Visibility.Visible : Visibility.Collapsed;
+
+    public Visibility WebUrlVisibility =>
+        IsWebUrl ? Visibility.Visible : Visibility.Collapsed;
+
+    public Visibility WebSearchVisibility =>
+        IsWebSearch ? Visibility.Visible : Visibility.Collapsed;
+
+    public Visibility WebAnyVisibility =>
+        (IsWebUrl || IsWebSearch) ? Visibility.Visible : Visibility.Collapsed;
+
     public Visibility ResultIconVisibility =>
         IsHelp ? Visibility.Collapsed : Visibility.Visible;
 
     public Visibility UwpVisibility =>
-        (IsCalculator || IsShellCommand) ? Visibility.Collapsed : Visibility.Visible;
+        (IsCalculator || IsShellCommand || IsSystemCommand || IsWebUrl || IsWebSearch) ? Visibility.Collapsed : Visibility.Visible;
 
     public Visibility ImageVisibility =>
-        (IconSource != null && !IsCalculator && !IsShellCommand && !IsHelp) ? Visibility.Visible : Visibility.Collapsed;
+        (IconSource != null && !IsCalculator && !IsShellCommand && !IsHelp && !IsSystemCommand && !IsWebUrl && !IsWebSearch) ? Visibility.Visible : Visibility.Collapsed;
 
     public Visibility HeaderVisibility =>
         IsHeader ? Visibility.Visible : Visibility.Collapsed;
@@ -97,5 +133,13 @@ public class SearchResultItem
     public Visibility ContentVisibility =>
         IsHeader ? Visibility.Collapsed : Visibility.Visible;
 
-    public string AppTypeBadge => IsCalculator ? "Calculator" : (IsShellCommand ? "Command" : (IsHelp ? "Help" : (IsUWP ? "UWP" : "Win32")));
+    public string AppTypeBadge =>
+        IsCalculator ? "Calculator"
+        : IsShellCommand ? "Command"
+        : IsHelp ? "Help"
+        : IsSystemCommand ? "System"
+        : IsWebUrl ? "Web"
+        : IsWebSearch ? "Search"
+        : IsUWP ? "UWP"
+        : "Win32";
 }

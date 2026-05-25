@@ -93,6 +93,33 @@ internal static class NativeMethods
     [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     internal static extern IntPtr LoadImageW(IntPtr hInst, string lpszName, uint uType, int cxDesired, int cyDesired, uint fuLoad);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern bool LockWorkStation();
+
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern bool ExitWindowsEx(uint uFlags, uint dwReason);
+
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    internal static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("powrprof.dll", SetLastError = true)]
+    internal static extern bool SetSuspendState(bool hibernate, bool forceCritical, bool disableWakeEvent);
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    internal static extern int SHEmptyRecycleBin(IntPtr hwnd, string? pszRootPath, uint dwFlags);
+
+    // System command constants
+    internal const uint EWX_LOGOFF = 0x00000000;
+    internal const uint EWX_SHUTDOWN = 0x00000001;
+    internal const uint EWX_REBOOT = 0x00000002;
+    internal const uint EWX_FORCE = 0x00000004;
+    internal const uint SHERB_NOCONFIRMATION = 0x00000001;
+    internal const uint SHERB_NOPROGRESSUI = 0x00000002;
+    internal const uint SHERB_NOSOUND = 0x00000004;
+    internal const uint WM_SYSCOMMAND = 0x0112;
+    internal const int SC_MONITORPOWER = 0xF170;
+    internal static readonly IntPtr HWND_BROADCAST = new(0xFFFF);
+
     // ========== dwmapi.dll ==========
 
     [DllImport("dwmapi.dll")]
