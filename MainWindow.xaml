@@ -7,7 +7,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Title="WinCast">
-
     <Border x:Name="RootSurface"
             BorderBrush="{StaticResource SearchBoxBorder}"
             BorderThickness="1"
@@ -20,7 +19,6 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-
             <!-- SEARCH BAR -->
             <Grid Grid.Row="0" Margin="18,16,18,14" ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
@@ -28,14 +26,12 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-
                 <FontIcon Grid.Column="0"
                           Glyph="&#xE721;"
                           FontFamily="{StaticResource IconFont}"
                           FontSize="18"
                           Foreground="{StaticResource AccentColor}"
                           VerticalAlignment="Center"/>
-
                 <TextBox x:Name="SearchBox"
                          Grid.Column="1"
                          PlaceholderText="Search apps, calculate, run commands…"
@@ -59,7 +55,6 @@
                         <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#44445A"/>
                     </TextBox.Resources>
                 </TextBox>
-
                 <ProgressRing x:Name="IndexingRing"
                               Grid.Column="2"
                               Width="18" Height="18"
@@ -67,12 +62,9 @@
                               IsActive="True"
                               Visibility="Visible"
                               VerticalAlignment="Center"/>
-
             </Grid>
-
             <!-- DIVIDER -->
             <Rectangle Grid.Row="1" Height="1" Fill="{StaticResource DividerBrush}" Opacity="0.8"/>
-
             <!-- CONTENT AREA -->
             <Grid Grid.Row="2" x:Name="ContentGrid">
                 <Grid.ColumnDefinitions>
@@ -80,23 +72,19 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="0" x:Name="DetailColumn"/>
                 </Grid.ColumnDefinitions>
-
                 <!-- LEFT PANE -->
                 <Grid Grid.Column="0">
-
                     <!-- DASHBOARD PANEL -->
                     <ScrollViewer x:Name="DashboardPanel"
                                   VerticalScrollBarVisibility="Hidden"
                                   Opacity="1">
                         <StackPanel Margin="18,18,18,14" Spacing="18">
-
                             <!-- Command hub header -->
                             <Grid ColumnSpacing="14">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="148"/>
                                 </Grid.ColumnDefinitions>
-
                                 <StackPanel Grid.Column="0" Spacing="5" VerticalAlignment="Center">
                                     <TextBlock x:Name="GreetingText"
                                                Text="Ready when you are"
@@ -133,7 +121,6 @@
                                         </Border>
                                     </StackPanel>
                                 </StackPanel>
-
                                 <Border Grid.Column="1"
                                         Background="{StaticResource SurfaceCard}"
                                         BorderBrush="{StaticResource SearchBoxBorder}"
@@ -148,24 +135,23 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource AccentColor}"
                                                    HorizontalAlignment="Center"/>
-                                        <TextBlock Text="indexed apps"
-                                                   FontSize="11"
-                                                   FontFamily="{StaticResource BodyFont}"
-                                                   Foreground="{StaticResource TextMuted}"
-                                                   HorizontalAlignment="Center"/>
+                                        <TextBlock x:Name="DashboardAppCountLabel" Text="indexed apps"
+                                                    FontSize="11"
+                                                    FontFamily="{StaticResource BodyFont}"
+                                                    Foreground="{StaticResource TextMuted}"
+                                                    HorizontalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                             </Grid>
-
                             <!-- Quick actions -->
                             <StackPanel Spacing="10">
-                                <TextBlock Text="COMMANDS"
-                                           FontSize="10"
-                                           FontFamily="{StaticResource DisplayFont}"
-                                           FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextMuted}"
-                                           CharacterSpacing="150"
-                                           Margin="2,0,0,0"/>
+                                <TextBlock x:Name="DashboardCommandsHeaderLabel" Text="COMMANDS"
+                                            FontSize="10"
+                                            FontFamily="{StaticResource DisplayFont}"
+                                            FontWeight="SemiBold"
+                                            Foreground="{StaticResource TextMuted}"
+                                            CharacterSpacing="150"
+                                            Margin="2,0,0,0"/>
                                 <Grid ColumnSpacing="10" RowSpacing="10">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -175,7 +161,6 @@
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
-
                                     <Button x:Name="QuickCalcButton"
                                             Grid.Row="0" Grid.Column="0"
                                             HorizontalAlignment="Stretch"
@@ -197,20 +182,19 @@
                                                       FontSize="20"
                                                       Foreground="{StaticResource AccentColor}"
                                                       VerticalAlignment="Center"/>
-                                            <StackPanel Grid.Column="1" Spacing="1">
-                                                <TextBlock Text="Calculate"
-                                                           FontSize="13"
-                                                           FontFamily="{StaticResource DisplayFont}"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="{StaticResource TextPrimary}"/>
-                                                <TextBlock Text="Try 2 + 2"
-                                                           FontSize="11"
-                                                           FontFamily="{StaticResource BodyFont}"
-                                                           Foreground="{StaticResource TextMuted}"/>
-                                            </StackPanel>
+                                             <StackPanel Grid.Column="1" Spacing="1">
+                                                 <TextBlock x:Name="QuickCalcHeaderLabel" Text="Calculate"
+                                                            FontSize="13"
+                                                            FontFamily="{StaticResource DisplayFont}"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="{StaticResource TextPrimary}"/>
+                                                 <TextBlock x:Name="QuickCalcDescLabel" Text="Try 2 + 2"
+                                                            FontSize="11"
+                                                            FontFamily="{StaticResource BodyFont}"
+                                                            Foreground="{StaticResource TextMuted}"/>
+                                             </StackPanel>
                                         </Grid>
                                     </Button>
-
                                     <Button x:Name="QuickBrowseButton"
                                             Grid.Row="0" Grid.Column="1"
                                             HorizontalAlignment="Stretch"
@@ -233,19 +217,18 @@
                                                       Foreground="{StaticResource CyanAccent}"
                                                       VerticalAlignment="Center"/>
                                             <StackPanel Grid.Column="1" Spacing="1">
-                                                <TextBlock Text="Browse apps"
+                                                <TextBlock x:Name="QuickBrowseHeaderLabel" Text="Browse apps"
                                                            FontSize="13"
                                                            FontFamily="{StaticResource DisplayFont}"
                                                            FontWeight="SemiBold"
                                                            Foreground="{StaticResource TextPrimary}"/>
-                                                <TextBlock Text="Open app list"
+                                                <TextBlock x:Name="QuickBrowseDescLabel" Text="Open app list"
                                                            FontSize="11"
                                                            FontFamily="{StaticResource BodyFont}"
                                                            Foreground="{StaticResource TextMuted}"/>
                                             </StackPanel>
                                         </Grid>
                                     </Button>
-
                                     <Button x:Name="QuickShellButton"
                                             Grid.Row="1" Grid.Column="0"
                                             HorizontalAlignment="Stretch"
@@ -268,19 +251,18 @@
                                                       Foreground="{StaticResource GreenAccent}"
                                                       VerticalAlignment="Center"/>
                                             <StackPanel Grid.Column="1" Spacing="1">
-                                                <TextBlock Text="Command"
+                                                <TextBlock x:Name="QuickShellHeaderLabel" Text="Command"
                                                            FontSize="13"
                                                            FontFamily="{StaticResource DisplayFont}"
                                                            FontWeight="SemiBold"
                                                            Foreground="{StaticResource TextPrimary}"/>
-                                                <TextBlock Text="Run with &gt;"
+                                                <TextBlock x:Name="QuickShellDescLabel" Text="Run with &gt;"
                                                            FontSize="11"
                                                            FontFamily="{StaticResource BodyFont}"
                                                            Foreground="{StaticResource TextMuted}"/>
                                             </StackPanel>
                                         </Grid>
                                     </Button>
-
                                     <Button x:Name="QuickHelpButton"
                                             Grid.Row="1" Grid.Column="1"
                                             HorizontalAlignment="Stretch"
@@ -303,12 +285,12 @@
                                                       Foreground="{StaticResource OrangeAccent}"
                                                       VerticalAlignment="Center"/>
                                             <StackPanel Grid.Column="1" Spacing="1">
-                                                <TextBlock Text="Shortcuts"
+                                                <TextBlock x:Name="QuickHelpHeaderLabel" Text="Shortcuts"
                                                            FontSize="13"
                                                            FontFamily="{StaticResource DisplayFont}"
                                                            FontWeight="SemiBold"
                                                            Foreground="{StaticResource TextPrimary}"/>
-                                                <TextBlock Text="Search help"
+                                                <TextBlock x:Name="QuickHelpDescLabel" Text="Search help"
                                                            FontSize="11"
                                                            FontFamily="{StaticResource BodyFont}"
                                                            Foreground="{StaticResource TextMuted}"/>
@@ -317,29 +299,32 @@
                                     </Button>
                                 </Grid>
                             </StackPanel>
-
                             <!-- Recent Apps (populated from code-behind) -->
                             <StackPanel Spacing="10">
                                 <Grid>
-                                    <TextBlock Text="RECENT"
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="DashboardRecentHeaderLabel"
+                                               Text="RECENT"
                                                FontSize="10"
                                                FontFamily="{StaticResource DisplayFont}"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource TextMuted}"
                                                CharacterSpacing="150"
-                                               Margin="2,0,0,0"/>
+                                               Margin="2,0,0,0"
+                                               Grid.Column="0"/>
                                     <TextBlock x:Name="RecentSummaryText"
                                                Text="No launches yet"
                                                FontSize="10"
                                                FontFamily="{StaticResource BodyFont}"
                                                Foreground="{StaticResource TextMuted}"
-                                               HorizontalAlignment="Right"/>
+                                               Grid.Column="1"/>
                                 </Grid>
-
                                 <StackPanel x:Name="RecentAppsSection" Spacing="3" Visibility="Collapsed">
                                     <StackPanel x:Name="RecentAppsContainer" Spacing="3"/>
                                 </StackPanel>
-
                                 <Border x:Name="RecentEmptyState"
                                         Background="{StaticResource SurfaceCard}"
                                         BorderBrush="{StaticResource SearchBoxBorder}"
@@ -358,12 +343,12 @@
                                                   Foreground="{StaticResource TextMuted}"
                                                   VerticalAlignment="Center"/>
                                         <StackPanel Grid.Column="1" Spacing="1">
-                                            <TextBlock Text="Recent launches will appear here"
+                                            <TextBlock x:Name="RecentEmptyTitleLabel" Text="Recent launches will appear here"
                                                        FontSize="13"
                                                        FontFamily="{StaticResource DisplayFont}"
                                                        FontWeight="SemiBold"
                                                        Foreground="{StaticResource TextPrimary}"/>
-                                            <TextBlock Text="Launch an app once and WinCast keeps it ready."
+                                            <TextBlock x:Name="RecentEmptyDescLabel" Text="Launch an app once and WinCast keeps it ready."
                                                        FontSize="11"
                                                        FontFamily="{StaticResource BodyFont}"
                                                        Foreground="{StaticResource TextMuted}"/>
@@ -371,10 +356,9 @@
                                     </Grid>
                                 </Border>
                             </StackPanel>
-
                             <!-- Starter examples -->
                             <StackPanel Spacing="10">
-                                <TextBlock Text="TRY"
+                                <TextBlock x:Name="DashboardTryHeaderLabel" Text="TRY"
                                            FontSize="10"
                                            FontFamily="{StaticResource DisplayFont}"
                                            FontWeight="SemiBold"
@@ -411,13 +395,10 @@
                                             Click="ExampleShellButton_Click"/>
                                 </StackPanel>
                             </StackPanel>
-
                         </StackPanel>
                     </ScrollViewer>
-
                     <!-- RESULTS PANEL -->
                     <Grid x:Name="ResultsPanel" Opacity="0" Visibility="Collapsed">
-
                         <ListView x:Name="ResultsListView"
                                   Margin="8,6,8,6"
                                   SelectionMode="Single"
@@ -444,7 +425,6 @@
                                     <Setter Property="IsTabStop" Value="False"/>
                                 </Style>
                             </ListView.ItemContainerStyle>
-
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="local:SearchResultItem">
                                     <Grid>
@@ -457,7 +437,6 @@
                                                    CharacterSpacing="150"
                                                    Margin="10,10,0,2"
                                                    Visibility="{x:Bind HeaderVisibility}"/>
-
                                         <!-- Result item -->
                                         <Grid Visibility="{x:Bind ContentVisibility}"
                                               ColumnSpacing="0">
@@ -469,7 +448,6 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-
                                             <!-- Accent bar -->
                                             <Border Grid.Column="0"
                                                     Width="3"
@@ -477,7 +455,6 @@
                                                     Background="{StaticResource AccentColor}"
                                                     VerticalAlignment="Stretch"
                                                     Opacity="0"/>
-
                                             <!-- Icon -->
                                             <Grid Grid.Column="2"
                                                   Width="38" Height="38"
@@ -528,7 +505,6 @@
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center"/>
                                             </Grid>
-
                                             <!-- Text -->
                                             <StackPanel Grid.Column="4" VerticalAlignment="Center" Spacing="1">
                                                 <TextBlock Text="{x:Bind Name}"
@@ -550,7 +526,6 @@
                                                            TextTrimming="CharacterEllipsis"
                                                            Visibility="{x:Bind UwpVisibility}"/>
                                             </StackPanel>
-
                                             <!-- Enter hint -->
                                             <Border Grid.Column="5"
                                                     Background="{StaticResource SurfaceCard}"
@@ -569,7 +544,6 @@
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
-
                         <!-- Empty state -->
                         <StackPanel x:Name="EmptyResultsPanel"
                                     VerticalAlignment="Center"
@@ -584,20 +558,20 @@
                                       HorizontalAlignment="Center"/>
                             <TextBlock x:Name="EmptyResultsText"
                                        Text="No results found"
-                                       FontSize="14"
+                                       FontSize="18"
                                        FontFamily="{StaticResource DisplayFont}"
+                                       FontWeight="SemiBold"
                                        Foreground="{StaticResource TextSecondary}"
                                        HorizontalAlignment="Center"/>
-                            <TextBlock Text="Try a different search term"
-                                       FontSize="12"
+                            <TextBlock x:Name="EmptyResultsDescText"
+                                       Text="Try a different search term"
+                                       FontSize="13"
                                        FontFamily="{StaticResource BodyFont}"
                                        Foreground="{StaticResource TextMuted}"
                                        HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
-
                 </Grid>
-
                 <!-- Vertical divider -->
                 <Rectangle x:Name="VerticalDivider"
                            Grid.Column="1"
@@ -606,7 +580,6 @@
                            Opacity="0.7"
                            Margin="0,10,0,10"
                            Visibility="Collapsed"/>
-
                 <!-- DETAIL PANEL -->
                 <Grid Grid.Column="2" x:Name="DetailPanel" Visibility="Collapsed">
                     <Grid.RowDefinitions>
@@ -614,7 +587,6 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-
                     <!-- Icon + Name -->
                     <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="16,22,16,12" Spacing="10">
                         <Grid Width="80" Height="80" HorizontalAlignment="Center">
@@ -681,7 +653,6 @@
                                 </Grid>
                             </Border>
                         </Grid>
-
                         <TextBlock x:Name="DetailTitleText"
                                    Text="App Name"
                                    FontSize="15"
@@ -692,7 +663,6 @@
                                    TextWrapping="Wrap"
                                    MaxWidth="250"
                                    Foreground="{StaticResource TextPrimary}"/>
-
                         <Border x:Name="TypeBadge"
                                 CornerRadius="20"
                                 Padding="10,4,10,4"
@@ -706,13 +676,11 @@
                                        Foreground="{StaticResource AccentHoverColor}"/>
                         </Border>
                     </StackPanel>
-
                     <!-- Metadata -->
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
                         <StackPanel Spacing="14" Margin="16,4,16,4">
-
                             <StackPanel x:Name="DetailPathContainer" Spacing="5">
-                                <TextBlock Text="LOCATION"
+                                <TextBlock x:Name="DetailTypeLocationLabel" Text="LOCATION"
                                            FontSize="9" FontFamily="{StaticResource DisplayFont}"
                                            FontWeight="SemiBold" CharacterSpacing="150"
                                            Foreground="{StaticResource TextMuted}"/>
@@ -725,9 +693,8 @@
                                                TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
                                 </Border>
                             </StackPanel>
-
                             <StackPanel x:Name="DetailAumidContainer" Spacing="5" Visibility="Collapsed">
-                                <TextBlock Text="APP ID"
+                                <TextBlock x:Name="DetailTypeAppIdLabel" Text="APP ID"
                                            FontSize="9" FontFamily="{StaticResource DisplayFont}"
                                            FontWeight="SemiBold" CharacterSpacing="150"
                                            Foreground="{StaticResource TextMuted}"/>
@@ -740,9 +707,8 @@
                                                TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
                                 </Border>
                             </StackPanel>
-
                             <StackPanel x:Name="DetailEquationContainer" Spacing="5" Visibility="Collapsed">
-                                <TextBlock Text="EXPRESSION"
+                                <TextBlock x:Name="DetailTypeExpressionLabel" Text="EXPRESSION"
                                            FontSize="9" FontFamily="{StaticResource DisplayFont}"
                                            FontWeight="SemiBold" CharacterSpacing="150"
                                            Foreground="{StaticResource TextMuted}"/>
@@ -751,9 +717,8 @@
                                            FontSize="14" FontFamily="{StaticResource MonoFont}"
                                            Foreground="{StaticResource TextSecondary}"/>
                             </StackPanel>
-
                             <StackPanel x:Name="DetailResultContainer" Spacing="5" Visibility="Collapsed">
-                                <TextBlock Text="RESULT"
+                                <TextBlock x:Name="DetailTypeResultLabel" Text="RESULT"
                                            FontSize="9" FontFamily="{StaticResource DisplayFont}"
                                            FontWeight="SemiBold" CharacterSpacing="150"
                                            Foreground="{StaticResource TextMuted}"/>
@@ -763,9 +728,8 @@
                                            FontWeight="Bold"
                                            Foreground="{StaticResource AccentColor}"/>
                             </StackPanel>
-
                             <StackPanel x:Name="DetailCommandContainer" Spacing="5" Visibility="Collapsed">
-                                <TextBlock Text="COMMAND"
+                                <TextBlock x:Name="DetailTypeCommandLabel" Text="COMMAND"
                                            FontSize="9" FontFamily="{StaticResource DisplayFont}"
                                            FontWeight="SemiBold" CharacterSpacing="150"
                                            Foreground="{StaticResource TextMuted}"/>
@@ -778,9 +742,8 @@
                                                TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
                                 </Border>
                             </StackPanel>
-
                             <StackPanel x:Name="DetailHelpContainer" Spacing="5" Visibility="Collapsed">
-                                <TextBlock Text="HELP &amp; DESCRIPTION"
+                                <TextBlock x:Name="DetailTypeHelpLabel" Text="HELP &amp; DESCRIPTION"
                                            FontSize="9" FontFamily="{StaticResource DisplayFont}"
                                            FontWeight="SemiBold" CharacterSpacing="150"
                                            Foreground="{StaticResource TextMuted}"/>
@@ -793,18 +756,15 @@
                                                TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
                                 </Border>
                             </StackPanel>
-
                         </StackPanel>
                     </ScrollViewer>
-
                     <!-- Actions -->
                     <StackPanel Grid.Row="2" Spacing="4" Margin="16,0,16,14">
                         <Rectangle Height="1" Fill="{StaticResource DividerBrush}" Opacity="0.6" Margin="0,0,0,8"/>
-                        <TextBlock Text="ACTIONS"
+                        <TextBlock x:Name="ActionTitleLabel" Text="ACTIONS"
                                    FontSize="9" FontFamily="{StaticResource DisplayFont}"
                                    FontWeight="SemiBold" CharacterSpacing="150"
                                    Foreground="{StaticResource TextMuted}" Margin="0,0,0,4"/>
-
                         <Grid x:Name="ActionOpenGrid" ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -815,40 +775,36 @@
                                 <TextBlock Text="Enter" FontSize="10" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextMuted}"/>
                             </Border>
                         </Grid>
-
                         <Grid x:Name="ActionCopyResultGrid" ColumnSpacing="8" Visibility="Collapsed">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Copy Result" FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="ActionCopyResultText" Text="Copy Result" FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
                             <Border Grid.Column="1" Background="{StaticResource SurfaceCard}" BorderBrush="{StaticResource SearchBoxBorder}" BorderThickness="1" CornerRadius="5" Padding="7,3,7,3">
                                 <TextBlock Text="Enter" FontSize="10" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextMuted}"/>
                             </Border>
                         </Grid>
-
                         <Grid x:Name="ActionAdminGrid" ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Run as Admin" FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="ActionRunAdminText" Text="Run as Admin" FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
                             <Border Grid.Column="1" Background="{StaticResource SurfaceCard}" BorderBrush="{StaticResource SearchBoxBorder}" BorderThickness="1" CornerRadius="5" Padding="7,3,7,3">
                                 <TextBlock Text="Ctrl+Shift+Enter" FontSize="10" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextMuted}"/>
                             </Border>
                         </Grid>
-
                         <Grid x:Name="ActionLocationGrid" ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Show in Explorer" FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="ActionShowExplorerText" Text="Show in Explorer" FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
                             <Border Grid.Column="1" Background="{StaticResource SurfaceCard}" BorderBrush="{StaticResource SearchBoxBorder}" BorderThickness="1" CornerRadius="5" Padding="7,3,7,3">
                                 <TextBlock Text="Ctrl+Shift+O" FontSize="10" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextMuted}"/>
                             </Border>
                         </Grid>
-
                         <Grid x:Name="ActionCopyPathGrid" ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -861,7 +817,6 @@
                         </Grid>
                     </StackPanel>
                 </Grid>
-
                 <!-- SETTINGS VIEW -->
                 <Grid x:Name="SettingsPanel"
                       Grid.Column="0" Grid.ColumnSpan="3"
@@ -921,17 +876,16 @@
                             </StackPanel>
                         </StackPanel>
                         <TextBlock Grid.Column="1"
+                                   x:Name="EscBackLabel"
                                    Text="ESC to go back"
                                    FontSize="11"
                                    FontFamily="{StaticResource MonoFont}"
                                    Foreground="{StaticResource TextMuted}"
                                    VerticalAlignment="Center"/>
                     </Grid>
-
                     <!-- ScrollViewer with Margin to start below the header -->
                     <ScrollViewer x:Name="SettingsScrollViewer" Margin="0,50,0,0" VerticalScrollBarVisibility="Hidden">
                         <StackPanel Spacing="14" Margin="0,0,12,0">
-
                             <!-- PREVIEW SECTION CARD -->
                             <Border Background="{StaticResource SurfaceCard}"
                                     BorderBrush="{StaticResource SearchBoxBorder}"
@@ -944,12 +898,12 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Spacing="3" VerticalAlignment="Center">
-                                        <TextBlock Text="Show Preview Panel"
+                                        <TextBlock x:Name="SettingPreviewTitleText" Text="Show Preview Panel"
                                                    FontSize="14"
                                                    FontFamily="{StaticResource DisplayFont}"
                                                    FontWeight="Medium"
                                                    Foreground="{StaticResource TextPrimary}"/>
-                                        <TextBlock Text="Display the right-hand preview panel when selecting apps or calculator results."
+                                        <TextBlock x:Name="SettingPreviewDescText" Text="Display the right-hand preview panel when selecting apps or calculator results."
                                                    FontSize="12"
                                                    FontFamily="{StaticResource BodyFont}"
                                                    Foreground="{StaticResource TextSecondary}"
@@ -970,7 +924,6 @@
                                     </ToggleSwitch>
                                 </Grid>
                             </Border>
-
                             <!-- STARTUP CARD -->
                             <Border Background="{StaticResource SurfaceCard}"
                                     BorderBrush="{StaticResource SearchBoxBorder}"
@@ -983,12 +936,14 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Spacing="3" VerticalAlignment="Center">
-                                        <TextBlock Text="Launch on System Startup"
+                                        <TextBlock x:Name="SettingStartupTitleText"
+                                                   Text="Launch on System Startup"
                                                    FontSize="14"
                                                    FontFamily="{StaticResource DisplayFont}"
                                                    FontWeight="Medium"
                                                    Foreground="{StaticResource TextPrimary}"/>
-                                        <TextBlock Text="Automatically start WinCast minimized to the system tray when you log in."
+                                        <TextBlock x:Name="SettingStartupDescText"
+                                                   Text="Automatically start WinCast minimized to the system tray when you log in."
                                                    FontSize="12"
                                                    FontFamily="{StaticResource BodyFont}"
                                                    Foreground="{StaticResource TextSecondary}"
@@ -1009,7 +964,6 @@
                                     </ToggleSwitch>
                                 </Grid>
                             </Border>
-
                             <!-- VISUAL THEME CARD -->
                             <Border Background="{StaticResource SurfaceCard}"
                                     BorderBrush="{StaticResource SearchBoxBorder}"
@@ -1018,18 +972,17 @@
                                     Padding="16,14,16,14">
                                 <StackPanel Spacing="14">
                                     <StackPanel Spacing="3">
-                                        <TextBlock Text="Window Backdrop Style"
+                                        <TextBlock x:Name="SettingBackdropTitleText" Text="Window Backdrop Style"
                                                    FontSize="14"
                                                    FontFamily="{StaticResource DisplayFont}"
                                                    FontWeight="Medium"
                                                    Foreground="{StaticResource TextPrimary}"/>
-                                        <TextBlock Text="Tune the launcher surface while keeping the rounded frame."
+                                        <TextBlock x:Name="SettingBackdropDescText" Text="Tune the launcher surface while keeping the rounded frame."
                                                    FontSize="12"
                                                    FontFamily="{StaticResource BodyFont}"
                                                    Foreground="{StaticResource TextSecondary}"
                                                    TextWrapping="Wrap"/>
                                     </StackPanel>
-
                                     <Grid ColumnSpacing="12" RowSpacing="10">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -1039,15 +992,15 @@
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
-
                                         <StackPanel Grid.Row="0" Grid.Column="0" Spacing="1">
-                                            <TextBlock Text="Theme"
+                                            <TextBlock x:Name="SettingThemeText" Text="Theme"
                                                        FontSize="12"
                                                        FontFamily="{StaticResource DisplayFont}"
                                                        FontWeight="Medium"
                                                        Foreground="{StaticResource TextPrimary}"/>
-                                            <TextBlock Text="Choose the launcher color mode."
+                                            <TextBlock x:Name="SettingThemeDescText" Text="Choose the launcher color mode."
                                                        FontSize="11"
                                                        FontFamily="{StaticResource BodyFont}"
                                                        Foreground="{StaticResource TextMuted}"/>
@@ -1060,14 +1013,13 @@
                                             <ComboBoxItem Content="Dark"/>
                                             <ComboBoxItem Content="Light"/>
                                         </ComboBox>
-
                                         <StackPanel Grid.Row="1" Grid.Column="0" Spacing="1">
-                                            <TextBlock Text="Material"
+                                            <TextBlock x:Name="SettingMaterialText" Text="Material"
                                                        FontSize="12"
                                                        FontFamily="{StaticResource DisplayFont}"
                                                        FontWeight="Medium"
                                                        Foreground="{StaticResource TextPrimary}"/>
-                                            <TextBlock Text="Pick the Windows backdrop behind the rounded surface."
+                                            <TextBlock x:Name="SettingMaterialDescText" Text="Pick the Windows backdrop behind the rounded surface."
                                                        FontSize="11"
                                                        FontFamily="{StaticResource BodyFont}"
                                                        Foreground="{StaticResource TextMuted}"/>
@@ -1080,14 +1032,13 @@
                                             <ComboBoxItem Content="Acrylic"/>
                                             <ComboBoxItem Content="Solid"/>
                                         </ComboBox>
-
                                         <StackPanel Grid.Row="2" Grid.Column="0" Spacing="1">
-                                            <TextBlock Text="Surface"
+                                            <TextBlock x:Name="SettingSurfaceText" Text="Surface"
                                                        FontSize="12"
                                                        FontFamily="{StaticResource DisplayFont}"
                                                        FontWeight="Medium"
                                                        Foreground="{StaticResource TextPrimary}"/>
-                                            <TextBlock Text="Control how much backdrop shows through the rounded panel."
+                                            <TextBlock x:Name="SettingSurfaceDescText" Text="Control how much backdrop shows through the rounded panel."
                                                        FontSize="11"
                                                        FontFamily="{StaticResource BodyFont}"
                                                        Foreground="{StaticResource TextMuted}"/>
@@ -1100,10 +1051,27 @@
                                             <ComboBoxItem Content="Balanced"/>
                                             <ComboBoxItem Content="Glass"/>
                                         </ComboBox>
+                                        <StackPanel Grid.Row="3" Grid.Column="0" Spacing="1">
+                                            <TextBlock x:Name="SettingLanguageText" Text="Language"
+                                                       FontSize="12"
+                                                       FontFamily="{StaticResource DisplayFont}"
+                                                       FontWeight="Medium"
+                                                       Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock x:Name="SettingLanguageDescText" Text="Choose your interface language."
+                                                       FontSize="11"
+                                                       FontFamily="{StaticResource BodyFont}"
+                                                       Foreground="{StaticResource TextMuted}"/>
+                                        </StackPanel>
+                                        <ComboBox x:Name="LanguageComboBox"
+                                                  Grid.Row="3" Grid.Column="1"
+                                                  Width="140"
+                                                  VerticalAlignment="Center">
+                                            <ComboBoxItem Content="English" Tag="en"/>
+                                            <ComboBoxItem Content="العربية" Tag="ar"/>
+                                        </ComboBox>
                                     </Grid>
                                 </StackPanel>
                             </Border>
-
                             <!-- UPDATE CARD -->
                             <Border Background="{StaticResource SurfaceCard}"
                                     BorderBrush="{StaticResource SearchBoxBorder}"
@@ -1117,7 +1085,8 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Spacing="3" VerticalAlignment="Center">
-                                            <TextBlock Text="Updates"
+                                            <TextBlock x:Name="SettingUpdatesTitleText"
+                                                       Text="Updates"
                                                        FontSize="14"
                                                        FontFamily="{StaticResource DisplayFont}"
                                                        FontWeight="Medium"
@@ -1136,7 +1105,6 @@
                                                 VerticalAlignment="Center"
                                                 Click="CheckUpdatesButton_Click"/>
                                     </Grid>
-
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -1159,7 +1127,6 @@
                                     </Grid>
                                 </StackPanel>
                             </Border>
-
                             <!-- SHORTCUTS INFO -->
                             <Border Background="{StaticResource SurfaceCard}"
                                     BorderBrush="{StaticResource SearchBoxBorder}"
@@ -1172,12 +1139,14 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Spacing="3" VerticalAlignment="Center">
-                                        <TextBlock Text="Global Launcher Shortcut"
+                                        <TextBlock x:Name="SettingShortcutTitleText"
+                                                   Text="Global Launcher Shortcut"
                                                    FontSize="14"
                                                    FontFamily="{StaticResource DisplayFont}"
                                                    FontWeight="Medium"
                                                    Foreground="{StaticResource TextPrimary}"/>
-                                        <TextBlock Text="The key combination used to toggle the WinCast launcher window."
+                                        <TextBlock x:Name="SettingShortcutDescText"
+                                                   Text="The key combination used to toggle the WinCast launcher window."
                                                    FontSize="12"
                                                    FontFamily="{StaticResource BodyFont}"
                                                    Foreground="{StaticResource TextSecondary}"/>
@@ -1197,10 +1166,8 @@
                                     </Border>
                                 </Grid>
                             </Border>
-
                         </StackPanel>
                     </ScrollViewer>
-
                     <!-- Help & Documentation ScrollViewer -->
                     <ScrollViewer x:Name="HelpScrollViewer" Margin="0,50,0,0" VerticalScrollBarVisibility="Hidden" Visibility="Collapsed">
                         <StackPanel Spacing="14" Margin="0,0,12,0">
@@ -1211,7 +1178,8 @@
                                     CornerRadius="10"
                                     Padding="16,14,16,14">
                                 <StackPanel Spacing="12">
-                                    <TextBlock Text="Keyboard Shortcuts"
+                                    <TextBlock x:Name="HelpShortcutsTitleText"
+                                               Text="Keyboard Shortcuts"
                                                FontSize="15"
                                                FontFamily="{StaticResource DisplayFont}"
                                                FontWeight="SemiBold"
@@ -1232,44 +1200,40 @@
                                         
                                         <!-- Row 0: Toggle Window -->
                                         <StackPanel Grid.Row="0" Grid.Column="0" Spacing="2">
-                                            <TextBlock Text="Toggle WinCast Window" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
-                                            <TextBlock Text="Show or hide the launcher window globally." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="HelpShortcutsToggleTitleText" Text="Toggle WinCast Window" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock x:Name="HelpShortcutsToggleDescText" Text="Show or hide the launcher window globally." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
                                         </StackPanel>
                                         <Border Grid.Row="0" Grid.Column="1" Background="{StaticResource SearchBoxBorder}" BorderThickness="1" BorderBrush="{StaticResource SearchBoxBorder}" CornerRadius="5" Padding="6,3,6,3" VerticalAlignment="Center">
                                             <TextBlock Text="Alt + Space" FontSize="11" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextPrimary}"/>
                                         </Border>
-
                                         <!-- Row 1: Launch Selected -->
                                         <StackPanel Grid.Row="1" Grid.Column="0" Spacing="2">
-                                            <TextBlock Text="Launch / Open Selected" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
-                                            <TextBlock Text="Execute the highlighted application, command, or calculator result." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="HelpShortcutsOpenTitleText" Text="Launch / Open Selected" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock x:Name="HelpShortcutsOpenDescText" Text="Execute the highlighted application, command, or calculator result." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
                                         </StackPanel>
                                         <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource SearchBoxBorder}" BorderThickness="1" BorderBrush="{StaticResource SearchBoxBorder}" CornerRadius="5" Padding="6,3,6,3" VerticalAlignment="Center">
                                             <TextBlock Text="Enter" FontSize="11" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextPrimary}"/>
                                         </Border>
-
                                         <!-- Row 2: Run as Administrator -->
                                         <StackPanel Grid.Row="2" Grid.Column="0" Spacing="2">
-                                            <TextBlock Text="Run as Administrator" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
-                                            <TextBlock Text="Elevate execution for Win32 apps or Shell commands." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="HelpShortcutsAdminTitleText" Text="Run as Administrator" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock x:Name="HelpShortcutsAdminDescText" Text="Elevate execution for Win32 apps or Shell commands." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
                                         </StackPanel>
                                         <Border Grid.Row="2" Grid.Column="1" Background="{StaticResource SearchBoxBorder}" BorderThickness="1" BorderBrush="{StaticResource SearchBoxBorder}" CornerRadius="5" Padding="6,3,6,3" VerticalAlignment="Center">
                                             <TextBlock Text="Ctrl + Shift + Enter" FontSize="11" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextPrimary}"/>
                                         </Border>
-
                                         <!-- Row 3: Open File Location -->
                                         <StackPanel Grid.Row="3" Grid.Column="0" Spacing="2">
-                                            <TextBlock Text="Show in File Explorer" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
-                                            <TextBlock Text="Reveal the application's executable in File Explorer." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="HelpShortcutsExplorerTitleText" Text="Show in File Explorer" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock x:Name="HelpShortcutsExplorerDescText" Text="Reveal the application's executable in File Explorer." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
                                         </StackPanel>
                                         <Border Grid.Row="3" Grid.Column="1" Background="{StaticResource SearchBoxBorder}" BorderThickness="1" BorderBrush="{StaticResource SearchBoxBorder}" CornerRadius="5" Padding="6,3,6,3" VerticalAlignment="Center">
                                             <TextBlock Text="Ctrl + Shift + O" FontSize="11" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextPrimary}"/>
                                         </Border>
-
                                         <!-- Row 4: Copy Value -->
                                         <StackPanel Grid.Row="4" Grid.Column="0" Spacing="2">
-                                            <TextBlock Text="Copy Value / Path / Command" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
-                                            <TextBlock Text="Copy the path, calculator output, or shell command string to clipboard." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="HelpShortcutsCopyTitleText" Text="Copy Value / Path / Command" FontSize="13" FontFamily="{StaticResource DisplayFont}" FontWeight="Medium" Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock x:Name="HelpShortcutsCopyDescText" Text="Copy the path, calculator output, or shell command string to clipboard." FontSize="11" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}"/>
                                         </StackPanel>
                                         <Border Grid.Row="4" Grid.Column="1" Background="{StaticResource SearchBoxBorder}" BorderThickness="1" BorderBrush="{StaticResource SearchBoxBorder}" CornerRadius="5" Padding="6,3,6,3" VerticalAlignment="Center">
                                             <TextBlock Text="Ctrl + C" FontSize="11" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextPrimary}"/>
@@ -1277,7 +1241,6 @@
                                     </Grid>
                                 </StackPanel>
                             </Border>
-
                             <!-- SHELL COMMAND EXECUTOR CARD -->
                             <Border Background="{StaticResource SurfaceCard}"
                                     BorderBrush="{StaticResource SearchBoxBorder}"
@@ -1285,25 +1248,26 @@
                                     CornerRadius="10"
                                     Padding="16,14,16,14">
                                 <StackPanel Spacing="8">
-                                    <TextBlock Text="Terminal &amp; Shell Commands"
+                                    <TextBlock x:Name="HelpShellTitleText"
+                                               Text="Terminal &amp; Shell Commands"
                                                FontSize="15"
                                                FontFamily="{StaticResource DisplayFont}"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource AccentColor}"/>
-                                    <TextBlock Text="You can execute arbitrary shell commands directly from the search bar using the prefix: &gt;"
+                                    <TextBlock x:Name="HelpShellDescText"
+                                               Text="You can execute arbitrary shell commands directly from the search bar using the prefix: &gt;"
                                                FontSize="13" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap"/>
                                     <Border Background="{StaticResource AppBackground}" BorderBrush="{StaticResource SearchBoxBorder}" BorderThickness="1" CornerRadius="6" Padding="12,10,12,10" Margin="0,4,0,4">
                                         <StackPanel Spacing="6">
-                                            <TextBlock Text="Example query:" FontSize="10" FontFamily="{StaticResource DisplayFont}" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}"/>
+                                            <TextBlock x:Name="HelpShellExampleText" Text="Example query:" FontSize="10" FontFamily="{StaticResource DisplayFont}" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}"/>
                                             <TextBlock Text="&gt; ping 8.8.8.8 -t" FontSize="13" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource CyanAccent}"/>
                                             <TextBlock Text="&gt; ipconfig /all" FontSize="13" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource CyanAccent}"/>
                                         </StackPanel>
                                     </Border>
-                                    <TextBlock Text="• Pressing Enter opens a command prompt window executing the command." FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
-                                    <TextBlock Text="• Pressing Ctrl+Shift+Enter executes the command as Administrator." FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                                    <TextBlock x:Name="HelpShellBullet1Text" Text="• Pressing Enter opens a command prompt window executing the command." FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                                    <TextBlock x:Name="HelpShellBullet2Text" Text="• Pressing Ctrl+Shift+Enter executes the command as Administrator." FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Border>
-
                             <!-- CALCULATOR CARD -->
                             <Border Background="{StaticResource SurfaceCard}"
                                     BorderBrush="{StaticResource SearchBoxBorder}"
@@ -1311,29 +1275,29 @@
                                     CornerRadius="10"
                                     Padding="16,14,16,14">
                                 <StackPanel Spacing="8">
-                                    <TextBlock Text="Instant Calculator"
+                                    <TextBlock x:Name="HelpCalcTitleText"
+                                               Text="Instant Calculator"
                                                FontSize="15"
                                                FontFamily="{StaticResource DisplayFont}"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource AccentColor}"/>
-                                    <TextBlock Text="Type any mathematical expression directly into the search bar. The result will instantly appear."
+                                    <TextBlock x:Name="HelpCalcDescText"
+                                               Text="Type any mathematical expression directly into the search bar. The result will instantly appear."
                                                FontSize="13" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap"/>
                                     <Border Background="{StaticResource AppBackground}" BorderBrush="{StaticResource SearchBoxBorder}" BorderThickness="1" CornerRadius="6" Padding="12,10,12,10" Margin="0,4,0,4">
                                         <StackPanel Spacing="6">
-                                            <TextBlock Text="Supported operators: +, -, *, /, (, )" FontSize="10" FontFamily="{StaticResource DisplayFont}" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}"/>
+                                            <TextBlock x:Name="HelpCalcOperatorsText" Text="Supported operators: +, -, *, /, (, )" FontSize="10" FontFamily="{StaticResource DisplayFont}" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}"/>
                                             <TextBlock Text="(15 + 25) * 4" FontSize="13" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource AccentColor}"/>
                                             <TextBlock Text="3.14 * 10 / 2" FontSize="13" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource AccentColor}"/>
                                         </StackPanel>
                                     </Border>
-                                    <TextBlock Text="• Press Enter to instantly copy the calculated result to your clipboard." FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                                    <TextBlock x:Name="HelpCalcBullet1Text" Text="• Press Enter to instantly copy the calculated result to your clipboard." FontSize="12" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>
-
             </Grid>
-
             <!-- FOOTER -->
             <Grid Grid.Row="3"
                   Background="{StaticResource DetailPaneBackground}"
@@ -1343,22 +1307,24 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-                    <TextBlock Text="Alt + Space Toggle"
+                    <TextBlock x:Name="FooterToggleText"
+                               Text="Alt + Space Toggle"
                                FontSize="10" FontFamily="{StaticResource MonoFont}"
                                Foreground="{StaticResource TextMuted}"/>
-                    <TextBlock Text="&#x2191;&#x2193; Navigate"
+                    <TextBlock x:Name="FooterNavigateText"
+                               Text="&#x2191;&#x2193; Navigate"
                                FontSize="10" FontFamily="{StaticResource MonoFont}"
                                Foreground="{StaticResource TextMuted}"/>
-                    <TextBlock Text="&#x23CE; Launch"
+                    <TextBlock x:Name="FooterLaunchText"
+                               Text="&#x23CE; Launch"
                                FontSize="10" FontFamily="{StaticResource MonoFont}"
                                Foreground="{StaticResource TextMuted}"/>
-                    <TextBlock Text="ESC Dismiss"
+                    <TextBlock x:Name="FooterDismissText"
+                               Text="ESC Dismiss"
                                FontSize="10" FontFamily="{StaticResource MonoFont}"
                                Foreground="{StaticResource TextMuted}"/>
                 </StackPanel>
-
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                     <TextBlock x:Name="FooterStatusText"
                                Text="Indexing…"
@@ -1410,7 +1376,6 @@
                     </Button>
                 </StackPanel>
             </Grid>
-
         </Grid>
     </Border>
 </Window>

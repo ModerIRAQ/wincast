@@ -1,0 +1,464 @@
+using System;
+using System.Collections.Generic;
+
+namespace WinCast.Services;
+
+internal static class LocalizationService
+{
+    private static readonly Dictionary<string, Dictionary<string, string>> _resources = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["en"] = new()
+        {
+            // Search Bar & Dashboard Greetings
+            ["SearchPlaceholder"] = "Search apps, calculate, run commands…",
+            ["GreetingText"] = "Ready when you are",
+            ["GreetingSubTextFormat"] = "{0} - search apps, calculate, or run a command.",
+            ["DashboardStatusText_Indexing"] = "Indexing apps",
+            ["DashboardStatusText_Ready"] = "Ready",
+            ["DashboardStatusText_Waiting"] = "Waiting for index",
+            ["DashboardAppCountTextFormat"] = "{0} indexed apps",
+            ["DashboardCommandsHeader"] = "COMMANDS",
+            ["QuickCalcHeader"] = "Calculate",
+            ["QuickCalcDesc"] = "Try 2 + 2",
+            ["QuickBrowseHeader"] = "Browse apps",
+            ["QuickBrowseDesc"] = "Open app list",
+            ["QuickShellHeader"] = "Command",
+            ["QuickShellDesc"] = "Run with >",
+            ["QuickHelpHeader"] = "Shortcuts",
+            ["QuickHelpDesc"] = "Search help",
+            ["DashboardRecentHeader"] = "RECENT",
+            ["RecentSummaryEmpty"] = "No launches yet",
+            ["RecentSummaryFormat"] = "{0} shown",
+            ["RecentEmptyTitle"] = "Recent launches will appear here",
+            ["RecentEmptyDesc"] = "Launch an app once and WinCast keeps it ready.",
+            ["DashboardTryHeader"] = "TRY",
+
+            // Search Results & Details
+            ["ResultsEmptyTitle"] = "No results found",
+            ["ResultsEmptyDesc"] = "Try a different search term",
+            ["DetailTypeLocation"] = "LOCATION",
+            ["DetailTypeAppId"] = "APP ID",
+            ["DetailTypeExpression"] = "EXPRESSION",
+            ["DetailTypeResult"] = "RESULT",
+            ["DetailTypeCommand"] = "COMMAND",
+            ["DetailTypeHelp"] = "HELP & DESCRIPTION",
+            ["ActionTitle"] = "ACTIONS",
+            ["ActionOpen"] = "Open",
+            ["ActionCopyResult"] = "Copy Result",
+            ["ActionRunAdmin"] = "Run as Admin",
+            ["ActionShowExplorer"] = "Show in Explorer",
+            ["ActionCopyPath"] = "Copy Path",
+            ["ActionClearHistory"] = "Clear History",
+            ["ActionPreferences"] = "Preferences",
+            ["ActionSettings"] = "Settings",
+            ["ActionClose"] = "Close",
+            ["ActionSelect"] = "Select",
+
+            // Settings Header & Tab Navigation
+            ["SettingsTab"] = "General",
+            ["HelpTab"] = "Help & Shortcuts",
+            ["EscBack"] = "ESC to go back",
+
+            // Settings General
+            ["SettingPreviewTitle"] = "Show Preview Panel",
+            ["SettingPreviewDesc"] = "Display the right-hand preview panel when selecting apps or calculator results.",
+            ["SettingStartupTitle"] = "Launch on System Startup",
+            ["SettingStartupDesc"] = "Automatically start WinCast minimized to the system tray when you log in.",
+            ["SettingBackdropTitle"] = "Window Backdrop Style",
+            ["SettingBackdropDesc"] = "Tune the launcher surface while keeping the rounded frame.",
+            ["SettingTheme"] = "Theme",
+            ["SettingThemeDesc"] = "Choose the launcher color mode.",
+            ["SettingThemeSystem"] = "System",
+            ["SettingThemeDark"] = "Dark",
+            ["SettingThemeLight"] = "Light",
+            ["SettingMaterial"] = "Material",
+            ["SettingMaterialDesc"] = "Pick the Windows backdrop behind the rounded surface.",
+            ["SettingMaterialMica"] = "Mica",
+            ["SettingMaterialAcrylic"] = "Acrylic",
+            ["SettingMaterialSolid"] = "Solid",
+            ["SettingSurface"] = "Surface",
+            ["SettingSurfaceDesc"] = "Control how much backdrop shows through the rounded panel.",
+            ["SettingSurfaceSubtle"] = "Subtle",
+            ["SettingSurfaceBalanced"] = "Balanced",
+            ["SettingSurfaceGlass"] = "Glass",
+            ["SettingLanguage"] = "Language",
+            ["SettingLanguageDesc"] = "Choose your interface language.",
+
+            // Settings Updates
+            ["SettingUpdatesTitle"] = "Updates",
+            ["SettingUpdatesCheck"] = "Check",
+            ["SettingUpdatesStatus"] = "Check GitHub Releases for a newer installer.",
+            ["SettingUpdatesChecking"] = "Checking for updates...",
+            ["SettingUpdatesUpToDate"] = "You're up to date on version {0}.",
+            ["SettingUpdatesAvailable"] = "Version {0} is available.",
+            ["SettingUpdatesDownload"] = "Download and install",
+            ["SettingUpdatesDownloading"] = "Downloading update {0}%...",
+            ["SettingUpdatesDownloaded"] = "Update downloaded. Installing...",
+            ["SettingUpdatesError"] = "Failed to check for updates.",
+            ["SettingUpdatesDownloadError"] = "Failed to download update.",
+
+            // Settings Shortcuts Card
+            ["SettingShortcutTitle"] = "Global Launcher Shortcut",
+            ["SettingShortcutDesc"] = "The key combination used to toggle the WinCast launcher window.",
+
+            // Help Panel
+            ["HelpShortcutsTitle"] = "Keyboard Shortcuts",
+            ["HelpShortcutsToggleTitle"] = "Toggle WinCast Window",
+            ["HelpShortcutsToggleDesc"] = "Show or hide the launcher window globally.",
+            ["HelpShortcutsOpenTitle"] = "Launch / Open Selected",
+            ["HelpShortcutsOpenDesc"] = "Execute the highlighted application, command, or calculator result.",
+            ["HelpShortcutsAdminTitle"] = "Run as Administrator",
+            ["HelpShortcutsAdminDesc"] = "Elevate execution for Win32 apps or Shell commands.",
+            ["HelpShortcutsExplorerTitle"] = "Show in File Explorer",
+            ["HelpShortcutsExplorerDesc"] = "Reveal the application's executable in File Explorer.",
+            ["HelpShortcutsCopyTitle"] = "Copy Value / Path / Command",
+            ["HelpShortcutsCopyDesc"] = "Copy the path, calculator output, or shell command string to clipboard.",
+            
+            ["HelpShellTitle"] = "Terminal & Shell Commands",
+            ["HelpShellDesc"] = "You can execute arbitrary shell commands directly from the search bar using the prefix: >",
+            ["HelpShellExample"] = "Example query:",
+            ["HelpShellBullet1"] = "• Pressing Enter opens a command prompt window executing the command.",
+            ["HelpShellBullet2"] = "• Pressing Ctrl+Shift+Enter executes the command as Administrator.",
+            
+            ["HelpCalcTitle"] = "Instant Calculator",
+            ["HelpCalcDesc"] = "Type any mathematical expression directly into the search bar. The result will instantly appear.",
+            ["HelpCalcOperators"] = "Supported operators: +, -, *, /, (, )",
+            ["HelpCalcBullet1"] = "• Press Enter to instantly copy the calculated result to your clipboard.",
+            
+            ["HelpAboutTitle"] = "About WinCast",
+            ["HelpAboutDesc"] = "A modern, extensible launcher for Windows built with WinUI 3.",
+
+            // Help List Items
+            ["HelpItem_AltSpace_Name"] = "Alt + Space",
+            ["HelpItem_AltSpace_Path"] = "Toggle WinCast launcher",
+            ["HelpItem_AltSpace_Detail"] = "Press Alt + Space globally from anywhere in Windows to show or hide the WinCast launcher window.",
+            ["HelpItem_Enter_Name"] = "Enter",
+            ["HelpItem_Enter_Path"] = "Launch, copy, or execute selected result",
+            ["HelpItem_Enter_Detail"] = "Press Enter on any selected search result to launch the application, copy the calculator result, copy help text, or execute the terminal command.",
+            ["HelpItem_CtrlShiftEnter_Name"] = "Ctrl + Shift + Enter",
+            ["HelpItem_CtrlShiftEnter_Path"] = "Run selected item as administrator",
+            ["HelpItem_CtrlShiftEnter_Detail"] = "Press Ctrl + Shift + Enter to run the selected desktop application or shell command with elevated administrative privileges.",
+            ["HelpItem_CtrlShiftO_Name"] = "Ctrl + Shift + O",
+            ["HelpItem_CtrlShiftO_Path"] = "Reveal selected app in File Explorer",
+            ["HelpItem_CtrlShiftO_Detail"] = "Press Ctrl + Shift + O to open File Explorer and highlight the selected application's executable file.",
+            ["HelpItem_CtrlC_Name"] = "Ctrl + C",
+            ["HelpItem_CtrlC_Path"] = "Copy path, result, command, or help text",
+            ["HelpItem_CtrlC_Detail"] = "Press Ctrl + C to copy the selected item's path, AUMID, calculation output, shell command, or help description to the clipboard.",
+            ["HelpItem_Escape_Name"] = "Escape",
+            ["HelpItem_Escape_Path"] = "Dismiss launcher or close settings",
+            ["HelpItem_Escape_Detail"] = "Press Escape to dismiss the WinCast window or close the Settings panel.",
+            ["HelpItem_Command_Name"] = "> command",
+            ["HelpItem_Command_Path"] = "Run a terminal command",
+            ["HelpItem_Command_Detail"] = "Prefix your search query with '>' to enter Shell Command Mode. For example, typing '> ipconfig /all' and pressing Enter executes that command directly in a command prompt window. Use Ctrl + Shift + Enter to elevate it.",
+            ["HelpItem_Math_Name"] = "Math expression",
+            ["HelpItem_Math_Path"] = "Calculate instantly from the search box",
+            ["HelpItem_Math_Detail"] = "Type any math expression, such as '(15 + 25) * 4', 'sqrt(144)', '2^10', or 'sin(pi/2)' directly into the search bar. Supports +, -, *, /, ^, %, sqrt, sin, cos, tan, log, log10, abs, ceil, floor, round, pi, and e. Press Enter to copy the result.",
+
+            // Dynamic strings / Search Results
+            ["PluginNameHelp"] = "Help",
+            ["PluginNameShell"] = "Shell",
+            ["PluginNameUrl"] = "URL",
+            ["PluginNameCalculator"] = "Calculator",
+            ["PluginNameSystem"] = "System Commands",
+            ["PluginNameApps"] = "Applications",
+            ["SearchGoogleFor"] = "Search Google for \"{0}\"",
+            ["OpenUrl"] = "Open \"{0}\"",
+            ["EnterCommand"] = "Enter a command...",
+            ["RunCommandText"] = "Run command: {0}",
+            ["CalculatorResult"] = "Calculator Result",
+
+            // System Commands
+            ["SysCmd_SleepName"] = "Sleep",
+            ["SysCmd_SleepDesc"] = "Put the computer to sleep",
+            ["SysCmd_ShutdownName"] = "Shutdown",
+            ["SysCmd_ShutdownDesc"] = "Shut down the computer",
+            ["SysCmd_RestartName"] = "Restart",
+            ["SysCmd_RestartDesc"] = "Restart the computer",
+            ["SysCmd_LockName"] = "Lock",
+            ["SysCmd_LockDesc"] = "Lock the workstation",
+            ["SysCmd_SignOutName"] = "Sign Out",
+            ["SysCmd_SignOutDesc"] = "Sign out of the current session",
+            ["SysCmd_LogOffName"] = "Log Off",
+            ["SysCmd_LogOffDesc"] = "Sign out of the current session",
+            ["SysCmd_EmptyBinName"] = "Empty Recycle Bin",
+            ["SysCmd_EmptyBinDesc"] = "Permanently delete all recycled items",
+            ["SysCmd_ScreenOffName"] = "Screen Off",
+            ["SysCmd_ScreenOffDesc"] = "Turn off the display",
+            ["SystemCommandType"] = "System Command",
+
+            // Dialogs & Dynamic status
+            ["CopiedStatus"] = "✓ Copied to clipboard",
+            ["ThemeAppliedStatus"] = "Theme applied",
+            ["ConfirmDialogTitle"] = "Are you sure you want to {0}?",
+            ["ConfirmShutdownBody"] = "This will shut down your PC. Any unsaved work will be lost.",
+            ["ConfirmRestartBody"] = "This will restart your PC. Any unsaved work will be lost.",
+            ["ConfirmSignOutBody"] = "This will sign you out of Windows.",
+            ["ConfirmEmptyBinTitle"] = "Are you sure you want to empty the Recycle Bin?",
+            ["ConfirmEmptyBinBody"] = "This will permanently delete all items in the Recycle Bin.",
+            ["ConfirmCancel"] = "Cancel",
+            ["ConfirmYes"] = "Yes, {0}",
+            ["ConfirmEmptyBinButton"] = "Empty Bin",
+            
+            // Greetings
+            ["Greeting_Morning"] = "Good morning",
+            ["Greeting_Afternoon"] = "Good afternoon",
+            ["Greeting_Evening"] = "Good evening",
+
+            // Footer Shortcuts
+            ["FooterToggleText"] = "Alt + Space Toggle",
+            ["FooterNavigateText"] = "↑↓ Navigate",
+            ["FooterLaunchText"] = "↵ Launch",
+            ["FooterDismissText"] = "ESC Dismiss",
+
+            // Version Updates
+            ["SettingUpdatesCurrentVersion"] = "Current version: {0}",
+
+            // Dynamic badges / titles
+            ["PluginNameSearch"] = "Search",
+            ["DetailTerminalCommand"] = "Terminal Command",
+
+            // Actions
+            ["ActionExecuteCommand"] = "Execute Command",
+            ["ActionCopyDescription"] = "Copy Description",
+            ["ActionOpenLink"] = "Open Link",
+            ["ActionSearchGoogle"] = "Search Google",
+            ["ActionCopyCommand"] = "Copy Command",
+            ["ActionCopyUrl"] = "Copy URL",
+            ["StoreApp"] = "Store app",
+            ["DesktopApp"] = "Desktop app",
+            ["NoResultsFor"] = "No results for \"{0}\"",
+            ["DashboardAppCountLabel"] = "indexed apps"
+        },
+        ["ar"] = new()
+        {
+            // Search Bar & Dashboard Greetings
+            ["SearchPlaceholder"] = "ابحث عن التطبيقات، احسب، نفذ الأوامر...",
+            ["GreetingText"] = "جاهز عندما تكون مستعدًا",
+            ["GreetingSubTextFormat"] = "{0} - ابحث عن التطبيقات، احسب، أو نفذ أمرًا.",
+            ["DashboardStatusText_Indexing"] = "جاري الفهرسة...",
+            ["DashboardStatusText_Ready"] = "جاهز",
+            ["DashboardStatusText_Waiting"] = "في انتظار الفهرسة",
+            ["DashboardAppCountTextFormat"] = "{0} تطبيقًا مفهرسًا",
+            ["DashboardCommandsHeader"] = "الأوامر",
+            ["QuickCalcHeader"] = "حساب",
+            ["QuickCalcDesc"] = "جرب 2 + 2",
+            ["QuickBrowseHeader"] = "تصفح التطبيقات",
+            ["QuickBrowseDesc"] = "فتح قائمة التطبيقات",
+            ["QuickShellHeader"] = "أمر",
+            ["QuickShellDesc"] = "تشغيل باستخدام >",
+            ["QuickHelpHeader"] = "الاختصارات",
+            ["QuickHelpDesc"] = "بحث في المساعدة",
+            ["DashboardRecentHeader"] = "الأخيرة",
+            ["RecentSummaryEmpty"] = "لا توجد عمليات تشغيل بعد",
+            ["RecentSummaryFormat"] = "تم عرض {0}",
+            ["RecentEmptyTitle"] = "عمليات التشغيل الأخيرة ستظهر هنا",
+            ["RecentEmptyDesc"] = "قم بتشغيل تطبيق مرة واحدة وسيقوم WinCast بإبقائه جاهزًا.",
+            ["DashboardTryHeader"] = "تجربة",
+
+            // Search Results & Details
+            ["ResultsEmptyTitle"] = "لم يتم العثور على نتائج",
+            ["ResultsEmptyDesc"] = "جرب كلمة بحث أخرى",
+            ["DetailTypeLocation"] = "المسار",
+            ["DetailTypeAppId"] = "معرّف التطبيق",
+            ["DetailTypeExpression"] = "التعبير الرياضي",
+            ["DetailTypeResult"] = "النتيجة",
+            ["DetailTypeCommand"] = "الأمر",
+            ["DetailTypeHelp"] = "المساعدة والوصف",
+            ["ActionTitle"] = "الإجراءات",
+            ["ActionOpen"] = "فتح",
+            ["ActionCopyResult"] = "نسخ النتيجة",
+            ["ActionRunAdmin"] = "تشغيل كمسؤول",
+            ["ActionShowExplorer"] = "إظهار في المستكشف",
+            ["ActionCopyPath"] = "نسخ المسار",
+            ["ActionClearHistory"] = "مسح السجل",
+            ["ActionPreferences"] = "التفضيلات",
+            ["ActionSettings"] = "الإعدادات",
+            ["ActionClose"] = "إغلاق",
+            ["ActionSelect"] = "تحديد",
+
+            // Settings Header & Tab Navigation
+            ["SettingsTab"] = "عام",
+            ["HelpTab"] = "المساعدة والاختصارات",
+            ["EscBack"] = "اضغط ESC للرجوع",
+
+            // Settings General
+            ["SettingPreviewTitle"] = "إظهار لوحة المعاينة",
+            ["SettingPreviewDesc"] = "عرض لوحة المعاينة اليمنى عند تحديد التطبيقات أو نتائج الحاسبة.",
+            ["SettingStartupTitle"] = "التشغيل عند بدء النظام",
+            ["SettingStartupDesc"] = "تشغيل WinCast تلقائيًا مصغرًا في شريط النظام عند تسجيل الدخول.",
+            ["SettingBackdropTitle"] = "نمط خلفية النافذة",
+            ["SettingBackdropDesc"] = "ضبط سطح قاذف التطبيقات مع الحفاظ على الإطار الدائري.",
+            ["SettingTheme"] = "السمة",
+            ["SettingThemeDesc"] = "اختر وضع الألوان لقاذف التطبيقات.",
+            ["SettingThemeSystem"] = "النظام",
+            ["SettingThemeDark"] = "داكن",
+            ["SettingThemeLight"] = "فاتح",
+            ["SettingMaterial"] = "المادة",
+            ["SettingMaterialDesc"] = "اختر خلفية Windows خلف السطح الدائري.",
+            ["SettingMaterialMica"] = "ميكا (Mica)",
+            ["SettingMaterialAcrylic"] = "أكريليك (Acrylic)",
+            ["SettingMaterialSolid"] = "صلب (Solid)",
+            ["SettingSurface"] = "السطح",
+            ["SettingSurfaceDesc"] = "التحكم في درجة ظهور الخلفية عبر اللوحة الدائرية.",
+            ["SettingSurfaceSubtle"] = "خفيف",
+            ["SettingSurfaceBalanced"] = "متوازن",
+            ["SettingSurfaceGlass"] = "زجاجي",
+            ["SettingLanguage"] = "اللغة",
+            ["SettingLanguageDesc"] = "اختر لغة واجهة المستخدم الخاصة بك.",
+
+            // Settings Updates
+            ["SettingUpdatesTitle"] = "التحديثات",
+            ["SettingUpdatesCheck"] = "تحقق",
+            ["SettingUpdatesStatus"] = "التحقق من إصدارات GitHub للحصول على مثبت أحدث.",
+            ["SettingUpdatesChecking"] = "جاري التحقق من وجود تحديثات...",
+            ["SettingUpdatesUpToDate"] = "أنت تستخدم أحدث إصدار {0}.",
+            ["SettingUpdatesAvailable"] = "الإصدار {0} متوفر الآن.",
+            ["SettingUpdatesDownload"] = "تحميل وتثبيت",
+            ["SettingUpdatesDownloading"] = "جاري تحميل التحديث {0}%...",
+            ["SettingUpdatesDownloaded"] = "تم تحميل التحديث. جاري التثبيت...",
+            ["SettingUpdatesError"] = "فشل التحقق من وجود تحديثات.",
+            ["SettingUpdatesDownloadError"] = "فشل تحميل التحديث.",
+
+            // Settings Shortcuts Card
+            ["SettingShortcutTitle"] = "الاختصار العام لقاذف التطبيقات",
+            ["SettingShortcutDesc"] = "مزيج المفاتيح المستخدم لتبديل ظهور نافذة WinCast.",
+
+            // Help Panel
+            ["HelpShortcutsTitle"] = "اختصارات لوحة المفاتيح",
+            ["HelpShortcutsToggleTitle"] = "تبديل نافذة WinCast",
+            ["HelpShortcutsToggleDesc"] = "إظهار أو إخفاء نافذة قاذف التطبيقات عالميًا.",
+            ["HelpShortcutsOpenTitle"] = "تشغيل / فتح المحدد",
+            ["HelpShortcutsOpenDesc"] = "تشغيل التطبيق أو الأمر أو نتيجة الآلة الحاسبة المحددة.",
+            ["HelpShortcutsAdminTitle"] = "تشغيل كمسؤول",
+            ["HelpShortcutsAdminDesc"] = "تشغيل التطبيقات أو الأوامر بصلاحيات مسؤول.",
+            ["HelpShortcutsExplorerTitle"] = "إظهار في مستكشف الملفات",
+            ["HelpShortcutsExplorerDesc"] = "فتح موقع ملف التطبيق في مستكشف الملفات.",
+            ["HelpShortcutsCopyTitle"] = "نسخ القيمة / المسار / الأمر",
+            ["HelpShortcutsCopyDesc"] = "نسخ المسار أو نتيجة الحاسبة أو أمر الشيل إلى الحافظة.",
+            
+            ["HelpShellTitle"] = "أوامر الشيل والترمينال",
+            ["HelpShellDesc"] = "يمكنك تنفيذ أوامر الشيل مباشرة من شريط البحث باستخدام البادئة: >",
+            ["HelpShellExample"] = "مثال على البحث:",
+            ["HelpShellBullet1"] = "• الضغط على Enter يفتح نافذة موجه الأوامر لتنفيذ الأمر.",
+            ["HelpShellBullet2"] = "• الضغط على Ctrl+Shift+Enter ينفذ الأمر بصلاحيات مسؤول.",
+            
+            ["HelpCalcTitle"] = "الآلة الحاسبة الفورية",
+            ["HelpCalcDesc"] = "اكتب أي تعبير رياضي مباشرة في شريط البحث. ستظهر النتيجة فورًا.",
+            ["HelpCalcOperators"] = "العمليات المدعومة: +, -, *, /, (, )",
+            ["HelpCalcBullet1"] = "• اضغط على Enter لنسخ نتيجة الحساب فورًا إلى الحافظة.",
+            
+            ["HelpAboutTitle"] = "حول WinCast",
+            ["HelpAboutDesc"] = "قاذف تطبيقات حديث وقابل للتوسيع لنظام التشغيل Windows مبني باستخدام WinUI 3.",
+
+            // Help List Items
+            ["HelpItem_AltSpace_Name"] = "Alt + Space",
+            ["HelpItem_AltSpace_Path"] = "تبديل نافذة WinCast",
+            ["HelpItem_AltSpace_Detail"] = "اضغط على Alt + Space عالميًا من أي مكان في Windows لإظهار أو إخفاء نافذة قاذف التطبيقات WinCast.",
+            ["HelpItem_Enter_Name"] = "Enter",
+            ["HelpItem_Enter_Path"] = "تشغيل أو نسخ أو تنفيذ النتيجة المحددة",
+            ["HelpItem_Enter_Detail"] = "اضغط على Enter على أي نتيجة بحث محددة لتشغيل التطبيق، أو نسخ نتيجة الآلة الحاسبة، أو نسخ نص المساعدة، أو تنفيذ أمر موجه الأوامر.",
+            ["HelpItem_CtrlShiftEnter_Name"] = "Ctrl + Shift + Enter",
+            ["HelpItem_CtrlShiftEnter_Path"] = "تشغيل العنصر المحدد كمسؤول",
+            ["HelpItem_CtrlShiftEnter_Detail"] = "اضغط على Ctrl + Shift + Enter لتشغيل تطبيق سطح المكتب أو أمر الشيل المحدد بصلاحيات مسؤول مرتفعة.",
+            ["HelpItem_CtrlShiftO_Name"] = "Ctrl + Shift + O",
+            ["HelpItem_CtrlShiftO_Path"] = "إظهار التطبيق المحدد في مستكشف الملفات",
+            ["HelpItem_CtrlShiftO_Detail"] = "اضغط على Ctrl + Shift + O لفتح مستكشف الملفات وتحديد الملف التنفيذي للتطبيق المختار.",
+            ["HelpItem_CtrlC_Name"] = "Ctrl + C",
+            ["HelpItem_CtrlC_Path"] = "نسخ المسار أو النتيجة أو الأمر أو نص المساعدة",
+            ["HelpItem_CtrlC_Detail"] = "اضغط على Ctrl + C لنسخ مسار العنصر المحدد، أو معرّف AUMID، أو ناتج العملية الحسابية، أو أمر الشيل، أو وصف المساعدة إلى الحافظة.",
+            ["HelpItem_Escape_Name"] = "Escape",
+            ["HelpItem_Escape_Path"] = "إغلاق قاذف التطبيقات أو إغلاق الإعدادات",
+            ["HelpItem_Escape_Detail"] = "اضغط على Escape لإخفاء نافذة WinCast أو إغلاق لوحة الإعدادات.",
+            ["HelpItem_Command_Name"] = "> command",
+            ["HelpItem_Command_Path"] = "تشغيل أمر موجه الأوامر",
+            ["HelpItem_Command_Detail"] = "ابدأ كتابة بحثك بـ '>' للدخول في وضع أوامر الشيل. على سبيل المثال، كتابة '> ipconfig /all' والضغط على Enter لتنفيذ هذا الأمر مباشرة في نافذة موجه الأوامر. استخدم Ctrl + Shift + Enter للتشغيل كمسؤول.",
+            ["HelpItem_Math_Name"] = "Math expression",
+            ["HelpItem_Math_Path"] = "الحساب الفوري من شريط البحث",
+            ["HelpItem_Math_Detail"] = "اكتب أي تعبير رياضي، مثل '(15 + 25) * 4'، أو 'sqrt(144)'، أو '2^10' مباشرة في شريط البحث. يدعم العمليات والمقادير: +, -, *, /, ^, % و الدوال: sqrt, sin, cos, tan, log, log10, abs, ceil, floor, round و الثوابت pi و e. اضغط على Enter لنسخ النتيجة.",
+
+            // Dynamic strings / Search Results
+            ["PluginNameHelp"] = "المساعدة",
+            ["PluginNameShell"] = "أوامر الشيل",
+            ["PluginNameUrl"] = "رابط ويب",
+            ["PluginNameCalculator"] = "الآلة الحاسبة",
+            ["PluginNameSystem"] = "أوامر النظام",
+            ["PluginNameApps"] = "التطبيقات",
+            ["SearchGoogleFor"] = "البحث في Google عن \"{0}\"",
+            ["OpenUrl"] = "فتح \"{0}\"",
+            ["EnterCommand"] = "أدخل الأمر...",
+            ["RunCommandText"] = "تشغيل الأمر: {0}",
+            ["CalculatorResult"] = "نتيجة الآلة الحاسبة",
+
+            // System Commands
+            ["SysCmd_SleepName"] = "سكون",
+            ["SysCmd_SleepDesc"] = "وضع الكمبيوتر في حالة سكون",
+            ["SysCmd_ShutdownName"] = "إيقاف التشغيل",
+            ["SysCmd_ShutdownDesc"] = "إيقاف تشغيل الكمبيوتر",
+            ["SysCmd_RestartName"] = "إعادة التشغيل",
+            ["SysCmd_RestartDesc"] = "إعادة تشغيل الكمبيوتر",
+            ["SysCmd_LockName"] = "قفل",
+            ["SysCmd_LockDesc"] = "قفل محطة العمل",
+            ["SysCmd_SignOutName"] = "تسجيل الخروج",
+            ["SysCmd_SignOutDesc"] = "تسجيل الخروج من الجلسة الحالية",
+            ["SysCmd_LogOffName"] = "تسجيل الخروج",
+            ["SysCmd_LogOffDesc"] = "تسجيل الخروج من الجلسة الحالية",
+            ["SysCmd_EmptyBinName"] = "تفريغ سلة المهملات",
+            ["SysCmd_EmptyBinDesc"] = "حذف كافة العناصر المحذوفة نهائيًا",
+            ["SysCmd_ScreenOffName"] = "إيقاف الشاشة",
+            ["SysCmd_ScreenOffDesc"] = "إيقاف تشغيل الشاشة",
+            ["SystemCommandType"] = "أمر نظام",
+
+            // Dialogs & Dynamic status
+            ["CopiedStatus"] = "✓ تم النسخ إلى الحافظة",
+            ["ThemeAppliedStatus"] = "تم تطبيق السمة",
+            ["ConfirmDialogTitle"] = "هل أنت متأكد أنك تريد {0}؟",
+            ["ConfirmShutdownBody"] = "سيؤدي هذا إلى إيقاف تشغيل الكمبيوتر. سيتم فقدان أي عمل غير محفوظ.",
+            ["ConfirmRestartBody"] = "سيؤدي هذا إلى إعادة تشغيل الكمبيوتر. سيتم فقدان أي عمل غير محفوظ.",
+            ["ConfirmSignOutBody"] = "سيؤدي هذا إلى تسجيل خروجك من Windows.",
+            ["ConfirmEmptyBinTitle"] = "هل أنت متأكد أنك تريد تفريغ سلة المهملات؟",
+            ["ConfirmEmptyBinBody"] = "سيؤدي هذا إلى حذف جميع العناصر الموجودة في سلة المهملات نهائيًا.",
+            ["ConfirmCancel"] = "إلغاء",
+            ["ConfirmYes"] = "نعم، {0}",
+            ["ConfirmEmptyBinButton"] = "تفريغ السلة",
+            
+            // Greetings
+            ["Greeting_Morning"] = "صباح الخير",
+            ["Greeting_Afternoon"] = "مساء الخير",
+            ["Greeting_Evening"] = "مساء الخير",
+
+            // Footer Shortcuts
+            ["FooterToggleText"] = "Alt + Space تبديل",
+            ["FooterNavigateText"] = "↑↓ تنقل",
+            ["FooterLaunchText"] = "↵ تشغيل",
+            ["FooterDismissText"] = "ESC إخفاء",
+
+            // Version Updates
+            ["SettingUpdatesCurrentVersion"] = "الإصدار الحالي: {0}",
+
+            // Dynamic badges / titles
+            ["PluginNameSearch"] = "بحث",
+            ["DetailTerminalCommand"] = "أمر الشيل",
+
+            // Actions
+            ["ActionExecuteCommand"] = "تنفيذ الأمر",
+            ["ActionCopyDescription"] = "نسخ الوصف",
+            ["ActionOpenLink"] = "فتح الرابط",
+            ["ActionSearchGoogle"] = "البحث في Google",
+            ["ActionCopyCommand"] = "نسخ الأمر",
+            ["ActionCopyUrl"] = "نسخ الرابط",
+            ["StoreApp"] = "تطبيق متجر",
+            ["DesktopApp"] = "تطبيق سطح المكتب",
+            ["NoResultsFor"] = "لا توجد نتائج لـ \"{0}\"",
+            ["DashboardAppCountLabel"] = "تطبيقًا مفهرسًا"
+        }
+    };
+
+    public static string GetString(string key, string? lang = null)
+    {
+        string activeLang = lang ?? SettingsService.Instance.Language;
+        if (!_resources.TryGetValue(activeLang, out var dict))
+            dict = _resources["en"];
+
+        return dict.TryGetValue(key, out var val) ? val : key;
+    }
+}

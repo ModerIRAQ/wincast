@@ -12,6 +12,7 @@ internal class AppSettings
     public string BackdropType { get; set; } = "Mica";
     public string SurfaceOpacity { get; set; } = "Balanced";
     public bool LaunchOnStartup { get; set; } = false;
+    public string Language { get; set; } = "en";
 }
 
 internal static class SettingsService
@@ -36,7 +37,20 @@ internal static class SettingsService
     {
         try
         {
-            if (!File.Exists(_filePath)) return new AppSettings();
+            if (!File.Exists(_filePath))
+            {
+                var settings = new AppSettings();
+                try
+                {
+                    string sysLang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+                    if (sysLang.Equals("ar", StringComparison.OrdinalIgnoreCase))
+                    {
+                        settings.Language = "ar";
+                    }
+                }
+                catch { }
+                return settings;
+            }
             var json = File.ReadAllText(_filePath);
             return JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
         }

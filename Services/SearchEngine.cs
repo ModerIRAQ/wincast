@@ -104,8 +104,9 @@ internal static class SearchEngine
         }
         if (appMatches <= 2 && !string.IsNullOrWhiteSpace(query) && !query.StartsWith(">") && !query.StartsWith("?"))
         {
+            string googleFormat = LocalizationService.GetString("SearchGoogleFor");
             results.Add(new SearchResult(
-                Item: new AppItem { Name = $"Search Google for \"{query}\"", Path = $"https://www.google.com/search?q={Uri.EscapeDataString(query)}" },
+                Item: new AppItem { Name = string.Format(googleFormat, query), Path = $"https://www.google.com/search?q={Uri.EscapeDataString(query)}" },
                 Score: -1,
                 IsWebSearch: true));
         }
@@ -119,7 +120,7 @@ internal static class SearchEngine
 
      private class HelpPlugin : IWinCastPlugin
      {
-         public string Name => "Help";
+         public string Name => LocalizationService.GetString("PluginNameHelp");
          public string? Prefix => "?";
          public string? IconGlyph => "\uE897";
          public int Priority => 100;
@@ -132,7 +133,7 @@ internal static class SearchEngine
 
      private class ShellCommandPlugin : IWinCastPlugin
      {
-         public string Name => "Shell";
+         public string Name => LocalizationService.GetString("PluginNameShell");
          public string? Prefix => ">";
          public string? IconGlyph => "\uE756";
          public int Priority => 90;
@@ -144,15 +145,16 @@ internal static class SearchEngine
              if (string.IsNullOrEmpty(cmdText))
              {
                  results.Add(new SearchResult(
-                     Item: new AppItem { Name = "Enter a command...", Path = "" },
+                     Item: new AppItem { Name = LocalizationService.GetString("EnterCommand"), Path = "" },
                      Score: 1000,
                      IsShellCommand: true,
                      ShellCommandText: ""));
              }
              else
              {
+                 string runTextFormat = LocalizationService.GetString("RunCommandText");
                  results.Add(new SearchResult(
-                     Item: new AppItem { Name = cmdText, Path = "Run command: " + cmdText },
+                     Item: new AppItem { Name = cmdText, Path = string.Format(runTextFormat, cmdText) },
                      Score: 1000,
                      IsShellCommand: true,
                      ShellCommandText: cmdText));
@@ -163,7 +165,7 @@ internal static class SearchEngine
 
      private class UrlDetectionPlugin : IWinCastPlugin
      {
-         public string Name => "URL";
+         public string Name => LocalizationService.GetString("PluginNameUrl");
          public string? Prefix => null;
          public string? IconGlyph => "\uE774";
          public int Priority => 80;
@@ -174,8 +176,9 @@ internal static class SearchEngine
              string trimmed = query.Trim();
              if (TryDetectUrl(trimmed, out string resolvedUrl))
              {
+                 string openFormat = LocalizationService.GetString("OpenUrl");
                  results.Add(new SearchResult(
-                     Item: new AppItem { Name = $"Open {trimmed}", Path = resolvedUrl },
+                     Item: new AppItem { Name = string.Format(openFormat, trimmed), Path = resolvedUrl },
                      Score: 300,
                      IsWebUrl: true,
                      WebUrl: resolvedUrl));
@@ -186,7 +189,7 @@ internal static class SearchEngine
 
      private class CalculatorPlugin : IWinCastPlugin
      {
-         public string Name => "Calculator";
+         public string Name => LocalizationService.GetString("PluginNameCalculator");
          public string? Prefix => null;
          public string? IconGlyph => "\uE1D0";
          public int Priority => 70;
@@ -198,7 +201,7 @@ internal static class SearchEngine
              {
                  string resStr = FormatNumber(calcResult);
                  results.Add(new SearchResult(
-                     Item: new AppItem { Name = "Calculator Result", Path = query },
+                     Item: new AppItem { Name = LocalizationService.GetString("CalculatorResult"), Path = query },
                      Score: 200,
                      IsCalculator: true,
                      CalcResult: resStr));
@@ -209,7 +212,7 @@ internal static class SearchEngine
 
      private class SystemCommandsPlugin : IWinCastPlugin
      {
-         public string Name => "System Commands";
+         public string Name => LocalizationService.GetString("PluginNameSystem");
          public string? Prefix => null;
          public string? IconGlyph => "\uE770";
          public int Priority => 60;
@@ -217,7 +220,9 @@ internal static class SearchEngine
          {
              foreach (var cmd in SystemCommands)
              {
-                 if (CalculateFuzzyScore(cmd.Name, query) > 0)
+                 string localizedNameKey = cmd.Name == "Log Off" ? "SysCmd_LogOffName" : $"SysCmd_{cmd.Action}Name";
+                 string localizedName = LocalizationService.GetString(localizedNameKey);
+                 if (CalculateFuzzyScore(cmd.Name, query) > 0 || CalculateFuzzyScore(localizedName, query) > 0)
                      return true;
              }
              return false;
@@ -227,11 +232,19 @@ internal static class SearchEngine
              var results = new List<SearchResult>();
              foreach (var cmd in SystemCommands)
              {
-                 int score = CalculateFuzzyScore(cmd.Name, query);
+                 string localizedNameKey = cmd.Name == "Log Off" ? "SysCmd_LogOffName" : $"SysCmd_{cmd.Action}Name";
+                 string localizedName = LocalizationService.GetString(localizedNameKey);
+                 string localizedDescKey = cmd.Name == "Log Off" ? "SysCmd_LogOffDesc" : $"SysCmd_{cmd.Action}Desc";
+                 string localizedDesc = LocalizationService.GetString(localizedDescKey);
+
+                 int scoreEng = CalculateFuzzyScore(cmd.Name, query);
+                 int scoreLoc = CalculateFuzzyScore(localizedName, query);
+                 int score = Math.Max(scoreEng, scoreLoc);
+
                  if (score > 0)
                  {
                      results.Add(new SearchResult(
-                         Item: new AppItem { Name = cmd.Name, Path = cmd.Description },
+                         Item: new AppItem { Name = localizedName, Path = localizedDesc },
                          Score: score,
                          IsSystemCommand: true,
                          SystemAction: cmd.Action));
@@ -243,7 +256,7 @@ internal static class SearchEngine
 
      private class AppSearchPlugin : IWinCastPlugin
      {
-         public string Name => "Applications";
+         public string Name => LocalizationService.GetString("PluginNameApps");
          public string? Prefix => null;
          public string? IconGlyph => null;
          public int Priority => 50;
@@ -312,14 +325,14 @@ internal static class SearchEngine
         string helpQuery = query[1..].Trim();
         var helpResults = new List<SearchResult>
         {
-            new(new AppItem { Name = "Alt + Space", Path = "Toggle WinCast launcher" }, 1000, IsHelp: true, HelpDetail: "Press Alt + Space globally from anywhere in Windows to show or hide the WinCast launcher window."),
-            new(new AppItem { Name = "Enter", Path = "Launch, copy, or execute selected result" }, 950, IsHelp: true, HelpDetail: "Press Enter on any selected search result to launch the application, copy the calculator result, copy help text, or execute the terminal command."),
-            new(new AppItem { Name = "Ctrl + Shift + Enter", Path = "Run selected item as administrator" }, 900, IsHelp: true, HelpDetail: "Press Ctrl + Shift + Enter to run the selected desktop application or shell command with elevated administrative privileges."),
-            new(new AppItem { Name = "Ctrl + Shift + O", Path = "Reveal selected app in File Explorer" }, 850, IsHelp: true, HelpDetail: "Press Ctrl + Shift + O to open File Explorer and highlight the selected application's executable file."),
-            new(new AppItem { Name = "Ctrl + C", Path = "Copy path, result, command, or help text" }, 800, IsHelp: true, HelpDetail: "Press Ctrl + C to copy the selected item's path, AUMID, calculation output, shell command, or help description to the clipboard."),
-            new(new AppItem { Name = "Escape", Path = "Dismiss launcher or close settings" }, 750, IsHelp: true, HelpDetail: "Press Escape to dismiss the WinCast window or close the Settings panel."),
-            new(new AppItem { Name = "> command", Path = "Run a terminal command" }, 700, IsHelp: true, HelpDetail: "Prefix your search query with '>' to enter Shell Command Mode. For example, typing '> ipconfig /all' and pressing Enter executes that command directly in a command prompt window. Use Ctrl + Shift + Enter to elevate it."),
-            new(new AppItem { Name = "Math expression", Path = "Calculate instantly from the search box" }, 650, IsHelp: true, HelpDetail: "Type any math expression, such as '(15 + 25) * 4', 'sqrt(144)', '2^10', or 'sin(pi/2)' directly into the search bar. Supports +, -, *, /, ^, %, sqrt, sin, cos, tan, log, log10, abs, ceil, floor, round, pi, and e. Press Enter to copy the result.")
+            new(new AppItem { Name = LocalizationService.GetString("HelpItem_AltSpace_Name"), Path = LocalizationService.GetString("HelpItem_AltSpace_Path") }, 1000, IsHelp: true, HelpDetail: LocalizationService.GetString("HelpItem_AltSpace_Detail")),
+            new(new AppItem { Name = LocalizationService.GetString("HelpItem_Enter_Name"), Path = LocalizationService.GetString("HelpItem_Enter_Path") }, 950, IsHelp: true, HelpDetail: LocalizationService.GetString("HelpItem_Enter_Detail")),
+            new(new AppItem { Name = LocalizationService.GetString("HelpItem_CtrlShiftEnter_Name"), Path = LocalizationService.GetString("HelpItem_CtrlShiftEnter_Path") }, 900, IsHelp: true, HelpDetail: LocalizationService.GetString("HelpItem_CtrlShiftEnter_Detail")),
+            new(new AppItem { Name = LocalizationService.GetString("HelpItem_CtrlShiftO_Name"), Path = LocalizationService.GetString("HelpItem_CtrlShiftO_Path") }, 850, IsHelp: true, HelpDetail: LocalizationService.GetString("HelpItem_CtrlShiftO_Detail")),
+            new(new AppItem { Name = LocalizationService.GetString("HelpItem_CtrlC_Name"), Path = LocalizationService.GetString("HelpItem_CtrlC_Path") }, 800, IsHelp: true, HelpDetail: LocalizationService.GetString("HelpItem_CtrlC_Detail")),
+            new(new AppItem { Name = LocalizationService.GetString("HelpItem_Escape_Name"), Path = LocalizationService.GetString("HelpItem_Escape_Path") }, 750, IsHelp: true, HelpDetail: LocalizationService.GetString("HelpItem_Escape_Detail")),
+            new(new AppItem { Name = LocalizationService.GetString("HelpItem_Command_Name"), Path = LocalizationService.GetString("HelpItem_Command_Path") }, 700, IsHelp: true, HelpDetail: LocalizationService.GetString("HelpItem_Command_Detail")),
+            new(new AppItem { Name = LocalizationService.GetString("HelpItem_Math_Name"), Path = LocalizationService.GetString("HelpItem_Math_Path") }, 650, IsHelp: true, HelpDetail: LocalizationService.GetString("HelpItem_Math_Detail"))
         };
 
         if (string.IsNullOrWhiteSpace(helpQuery))

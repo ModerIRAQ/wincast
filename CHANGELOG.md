@@ -2,6 +2,14 @@
 
 All notable changes to WinCast are documented here.
 
+## 0.4.0
+
+- Added full Arabic language support and Right-to-Left (RTL) layout mirroring across all panels, settings, and list alignments.
+- Localized greetings, dates (using Arabic culture), confirmation dialogs, and dynamic indexing/update statuses.
+- Fixed search box focus and disabled state locks when changing interface languages.
+- Resolved localization bugs on the dashboard app count card and the bottom status bar.
+- Fixed missing icons for Google search fallbacks and system native commands.
+
 ## 0.3.0
 
 - Added corrected and enhanced Calculator supporting modulo, exponents, negation, trigonometric and math functions, constants, and percentages.

@@ -96,8 +96,11 @@ public sealed partial class MainWindow : Window
         ThemeModeComboBox.SelectionChanged += ThemeModeComboBox_SelectionChanged;
         BackdropComboBox.SelectionChanged += BackdropComboBox_SelectionChanged;
         SurfaceOpacityComboBox.SelectionChanged += SurfaceOpacityComboBox_SelectionChanged;
+        LanguageComboBox.SelectionChanged += LanguageComboBox_SelectionChanged;
         SettingsTabButton.Click += (s, e) => SwitchSettingsTab(true);
         HelpTabButton.Click += (s, e) => SwitchSettingsTab(false);
+
+        ApplyLanguage(SettingsService.Instance.Language);
 
         _ = CheckForUpdatesInBackgroundAsync();
     }
@@ -156,10 +159,11 @@ public sealed partial class MainWindow : Window
         // Show loading state
         DispatcherQueue.TryEnqueue(() =>
         {
+            string lang = SettingsService.Instance.Language;
             IndexingRing.Visibility = Visibility.Visible;
             IndexingRing.IsActive = true;
-            FooterStatusText.Text = "Indexing apps…";
-            DashboardStatusText.Text = "Indexing apps";
+            FooterStatusText.Text = LocalizationService.GetString("DashboardStatusText_Indexing", lang) + "…";
+            DashboardStatusText.Text = LocalizationService.GetString("DashboardStatusText_Indexing", lang);
         });
 
         do
@@ -180,9 +184,13 @@ public sealed partial class MainWindow : Window
 
             DispatcherQueue.TryEnqueue(() =>
             {
+                string lang = SettingsService.Instance.Language;
                 IndexingRing.Visibility = Visibility.Collapsed;
                 IndexingRing.IsActive = false;
-                FooterStatusText.Text = $"{_apps.Count} apps indexed";
+                
+                string format = LocalizationService.GetString("DashboardAppCountTextFormat", lang);
+                FooterStatusText.Text = string.Format(format, _apps.Count);
+                
                 RefreshDashboardStats();
                 UpdateSearch(SearchBox.Text);
                 // Re-bind recent items now that we have icons
@@ -358,8 +366,9 @@ public sealed partial class MainWindow : Window
 
         if (rawResults.Count == 0)
         {
+            string lang = SettingsService.Instance.Language;
             EmptyResultsPanel.Visibility = Visibility.Visible;
-            EmptyResultsText.Text = $"No results for \"{query}\"";
+            EmptyResultsText.Text = string.Format(LocalizationService.GetString("NoResultsFor", lang), query);
             SetPreviewPaneVisibility(false);
             return;
         }
@@ -718,12 +727,36 @@ public sealed partial class MainWindow : Window
         bool isDestructive = selected.SystemAction is "shutdown" or "restart" or "signout" or "emptybin";
         if (isDestructive)
         {
+            string lang = SettingsService.Instance.Language;
+            string title, body, btnText;
+            if (selected.SystemAction == "emptybin")
+            {
+                title = LocalizationService.GetString("ConfirmEmptyBinTitle", lang);
+                body = LocalizationService.GetString("ConfirmEmptyBinBody", lang);
+                btnText = LocalizationService.GetString("ConfirmEmptyBinButton", lang);
+            }
+            else
+            {
+                string actionName = selected.Name;
+                title = string.Format(LocalizationService.GetString("ConfirmDialogTitle", lang), actionName);
+                btnText = string.Format(LocalizationService.GetString("ConfirmYes", lang), actionName);
+                
+                string bodyKey = selected.SystemAction switch
+                {
+                    "shutdown" => "ConfirmShutdownBody",
+                    "restart" => "ConfirmRestartBody",
+                    "signout" => "ConfirmSignOutBody",
+                    _ => ""
+                };
+                body = !string.IsNullOrEmpty(bodyKey) ? LocalizationService.GetString(bodyKey, lang) : "";
+            }
+
             ContentDialog confirmDialog = new ContentDialog
             {
-                Title = $"{selected.Name}?",
-                Content = $"Are you sure you want to perform this action: {selected.Name}?",
-                PrimaryButtonText = selected.Name,
-                CloseButtonText = "Cancel",
+                Title = title,
+                Content = body,
+                PrimaryButtonText = btnText,
+                CloseButtonText = LocalizationService.GetString("ConfirmCancel", lang),
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = this.Content.XamlRoot
             };
@@ -775,28 +808,58 @@ public sealed partial class MainWindow : Window
 
     private void RefreshGreeting()
     {
+        string lang = SettingsService.Instance.Language;
         int hour = DateTime.Now.Hour;
-        string greeting = hour < 12 ? "Good morning"
-                        : hour < 17 ? "Good afternoon"
-                        : "Good evening";
-        GreetingText.Text = greeting;
-        GreetingSubText.Text = $"{DateTime.Now:dddd, MMMM d} - search apps, calculate, or run a command.";
+        string greetingKey = hour < 12 ? "Greeting_Morning"
+                           : hour < 17 ? "Greeting_Afternoon"
+                           : "Greeting_Evening";
+        GreetingText.Text = LocalizationService.GetString(greetingKey, lang);
+
+        string format = LocalizationService.GetString("GreetingSubTextFormat", lang);
+        var culture = new System.Globalization.CultureInfo(lang == "ar" ? "ar-AE" : "en-US");
+        string dateStr = DateTime.Now.ToString("dddd, MMMM d", culture);
+        GreetingSubText.Text = string.Format(format, dateStr);
+
         RefreshDashboardStats();
     }
 
     private void RefreshDashboardStats()
     {
+        string lang = SettingsService.Instance.Language;
         DashboardAppCountText.Text = _apps.Count > 0 ? _apps.Count.ToString() : "--";
-        DashboardStatusText.Text = _isScanning
-            ? "Indexing apps"
+        DashboardAppCountLabel.Text = LocalizationService.GetString("DashboardAppCountLabel", lang);
+        
+        string statusKey = _isScanning
+            ? "DashboardStatusText_Indexing"
             : _apps.Count > 0
-                ? "Ready"
-                : "Waiting for index";
+                ? "DashboardStatusText_Ready"
+                : "DashboardStatusText_Waiting";
+        DashboardStatusText.Text = LocalizationService.GetString(statusKey, lang);
+
+        if (_isScanning)
+        {
+            FooterStatusText.Text = LocalizationService.GetString("DashboardStatusText_Indexing", lang) + "…";
+        }
+        else if (_apps.Count > 0)
+        {
+            string format = LocalizationService.GetString("DashboardAppCountTextFormat", lang);
+            FooterStatusText.Text = string.Format(format, _apps.Count);
+        }
+        else
+        {
+            FooterStatusText.Text = LocalizationService.GetString("DashboardStatusText_Waiting", lang);
+        }
 
         int recentCount = _recentEntries.Count;
-        RecentSummaryText.Text = recentCount == 0
-            ? "No launches yet"
-            : $"{Math.Min(recentCount, 6)} shown";
+        if (recentCount == 0)
+        {
+            RecentSummaryText.Text = LocalizationService.GetString("RecentSummaryEmpty", lang);
+        }
+        else
+        {
+            string format = LocalizationService.GetString("RecentSummaryFormat", lang);
+            RecentSummaryText.Text = string.Format(format, Math.Min(recentCount, 6));
+        }
     }
 
     private void RefreshRecentItems()
@@ -877,9 +940,10 @@ public sealed partial class MainWindow : Window
                 Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextPrimary"],
                 TextTrimming = TextTrimming.CharacterEllipsis
             });
+            string appTypeKey = entry.IsUWP ? "StoreApp" : "DesktopApp";
             textStack.Children.Add(new TextBlock
             {
-                Text = entry.IsUWP ? "Store app" : "Desktop app",
+                Text = LocalizationService.GetString(appTypeKey, SettingsService.Instance.Language),
                 FontSize = 10,
                 FontFamily = (Microsoft.UI.Xaml.Media.FontFamily)Application.Current.Resources["BodyFont"],
                 Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextMuted"]
@@ -1141,8 +1205,9 @@ public sealed partial class MainWindow : Window
         dataPackage.SetText(textToCopy);
         Clipboard.SetContent(dataPackage);
 
+        string lang = SettingsService.Instance.Language;
         var prev = FooterStatusText.Text;
-        FooterStatusText.Text = "✓ Copied to clipboard";
+        FooterStatusText.Text = LocalizationService.GetString("CopiedStatus", lang);
         _ = Task.Delay(1800).ContinueWith(_ =>
             DispatcherQueue.TryEnqueue(() => FooterStatusText.Text = prev));
     }
@@ -1401,8 +1466,8 @@ public sealed partial class MainWindow : Window
 
             ShowPreviewToggle.IsOn = SettingsService.Instance.ShowPreview;
             LaunchOnStartupToggle.IsOn = SettingsService.Instance.LaunchOnStartup;
-            CurrentVersionText.Text = $"Current version {UpdateService.CurrentVersion}";
-            UpdateStatusText.Text = "Check GitHub Releases for a newer installer.";
+            CurrentVersionText.Text = string.Format(LocalizationService.GetString("SettingUpdatesCurrentVersion", SettingsService.Instance.Language), UpdateService.CurrentVersion);
+            UpdateStatusText.Text = LocalizationService.GetString("SettingUpdatesStatus", SettingsService.Instance.Language);
             DownloadUpdateButton.Visibility = _availableUpdate?.IsUpdateAvailable == true
                 ? Visibility.Visible
                 : Visibility.Collapsed;
@@ -1429,6 +1494,12 @@ public sealed partial class MainWindow : Window
                 "Balanced" => 1,
                 "Glass" => 2,
                 _ => 1
+            };
+
+            LanguageComboBox.SelectedIndex = SettingsService.Instance.Language switch
+            {
+                "ar" => 1,
+                _ => 0
             };
 
             SwitchSettingsTab(true);
@@ -1477,9 +1548,10 @@ public sealed partial class MainWindow : Window
 
     private async void CheckUpdatesButton_Click(object sender, RoutedEventArgs e)
     {
+        string lang = SettingsService.Instance.Language;
         CheckUpdatesButton.IsEnabled = false;
         DownloadUpdateButton.Visibility = Visibility.Collapsed;
-        UpdateStatusText.Text = "Checking GitHub Releases...";
+        UpdateStatusText.Text = LocalizationService.GetString("SettingUpdatesChecking", lang);
 
         try
         {
@@ -1487,18 +1559,18 @@ public sealed partial class MainWindow : Window
 
             if (_availableUpdate.IsUpdateAvailable)
             {
-                UpdateStatusText.Text = $"Version {_availableUpdate.TagName} is available.";
+                UpdateStatusText.Text = string.Format(LocalizationService.GetString("SettingUpdatesAvailable", lang), _availableUpdate.TagName);
                 SetUpdateAvailable(_availableUpdate);
             }
             else
             {
-                UpdateStatusText.Text = $"You're up to date on version {UpdateService.CurrentVersion}.";
+                UpdateStatusText.Text = string.Format(LocalizationService.GetString("SettingUpdatesUpToDate", lang), UpdateService.CurrentVersion);
                 ClearAvailableUpdate();
             }
         }
         catch (Exception ex)
         {
-            UpdateStatusText.Text = $"Update check failed: {ex.Message}";
+            UpdateStatusText.Text = $"{LocalizationService.GetString("SettingUpdatesError", lang)} {ex.Message}";
         }
         finally
         {
@@ -1542,7 +1614,9 @@ public sealed partial class MainWindow : Window
         FooterUpdateButton.IsEnabled = true;
         DownloadUpdateButton.Visibility = Visibility.Visible;
         DownloadUpdateButton.IsEnabled = true;
-        FooterStatusText.Text = $"Update {update.TagName} available";
+        
+        string lang = SettingsService.Instance.Language;
+        FooterStatusText.Text = string.Format(LocalizationService.GetString("SettingUpdatesAvailable", lang), update.TagName);
     }
 
     private void ClearAvailableUpdate()
@@ -1555,6 +1629,7 @@ public sealed partial class MainWindow : Window
     private async Task DownloadAndInstallUpdateAsync()
     {
         if (_availableUpdate == null || _isUpdateDownloading) return;
+        string lang = SettingsService.Instance.Language;
 
         _isUpdateDownloading = true;
         DownloadUpdateButton.IsEnabled = false;
@@ -1563,27 +1638,27 @@ public sealed partial class MainWindow : Window
         FooterUpdateIcon.Visibility = Visibility.Collapsed;
         FooterUpdateRing.Visibility = Visibility.Visible;
         FooterUpdateRing.IsActive = true;
-        UpdateStatusText.Text = $"Downloading {_availableUpdate.InstallerName}...";
-        FooterStatusText.Text = "Downloading update...";
+        UpdateStatusText.Text = string.Format(LocalizationService.GetString("SettingUpdatesDownloading", lang), 0);
+        FooterStatusText.Text = string.Format(LocalizationService.GetString("SettingUpdatesDownloading", lang), 0);
 
         try
         {
             var progress = new Progress<double>(value =>
             {
                 int percent = Math.Clamp((int)Math.Round(value * 100), 0, 100);
-                UpdateStatusText.Text = $"Downloading update... {percent}%";
-                FooterStatusText.Text = $"Update {percent}%";
+                UpdateStatusText.Text = string.Format(LocalizationService.GetString("SettingUpdatesDownloading", lang), percent);
+                FooterStatusText.Text = string.Format(LocalizationService.GetString("SettingUpdatesDownloading", lang), percent);
             });
 
             string installerPath = await UpdateService.DownloadInstallerAsync(_availableUpdate, progress);
-            UpdateStatusText.Text = "Starting installer...";
-            FooterStatusText.Text = "Starting installer...";
+            UpdateStatusText.Text = LocalizationService.GetString("SettingUpdatesDownloaded", lang);
+            FooterStatusText.Text = LocalizationService.GetString("SettingUpdatesDownloaded", lang);
             UpdateService.StartInstallerAndExit(installerPath);
         }
         catch (Exception ex)
         {
-            UpdateStatusText.Text = $"Download failed: {ex.Message}";
-            FooterStatusText.Text = "Update download failed";
+            UpdateStatusText.Text = $"{LocalizationService.GetString("SettingUpdatesDownloadError", lang)} {ex.Message}";
+            FooterStatusText.Text = LocalizationService.GetString("SettingUpdatesDownloadError", lang);
             DownloadUpdateButton.IsEnabled = true;
             CheckUpdatesButton.IsEnabled = true;
             FooterUpdateButton.IsEnabled = true;
@@ -1709,7 +1784,7 @@ public sealed partial class MainWindow : Window
 
         RootSurface.Background = CreateRootSurfaceBrush(settings, light, surfaceAlpha);
         RootSurface.BorderBrush = (Brush)App.Current.Resources["SearchBoxBorder"];
-        FooterStatusText.Text = "Theme applied";
+        FooterStatusText.Text = LocalizationService.GetString("ThemeAppliedStatus", settings.Language);
     }
 
     private static SolidColorBrush ColorBrush(byte a, byte r, byte g, byte b)
@@ -1775,6 +1850,153 @@ public sealed partial class MainWindow : Window
             existing.Color = brush.Color;
         else
             App.Current.Resources[key] = brush;
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  Arabic Language & Layout Mirroring Integration
+    // ═══════════════════════════════════════════════════
+
+    private void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (LanguageComboBox == null) return;
+        string? val = (LanguageComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "en";
+
+        if (SettingsService.Instance.Language != val)
+        {
+            SettingsService.Instance.Language = val;
+            SettingsService.Save();
+            ApplyLanguage(val);
+        }
+    }
+
+    private void ApplyLanguage(string lang)
+    {
+        // 1. Root FlowDirection Mirroring
+        RootSurface.FlowDirection = lang == "ar" ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+
+        // 2. Search Bar Placeholder
+        SearchBox.PlaceholderText = LocalizationService.GetString("SearchPlaceholder", lang);
+
+        // 3. Greetings & Dynamic dashboard status
+        RefreshGreeting(); 
+        DashboardAppCountLabel.Text = LocalizationService.GetString("DashboardAppCountLabel", lang);
+
+        // 4. Quick Action Buttons
+        DashboardCommandsHeaderLabel.Text = LocalizationService.GetString("DashboardCommandsHeader", lang);
+        QuickCalcHeaderLabel.Text = LocalizationService.GetString("QuickCalcHeader", lang);
+        QuickCalcDescLabel.Text = LocalizationService.GetString("QuickCalcDesc", lang);
+        QuickBrowseHeaderLabel.Text = LocalizationService.GetString("QuickBrowseHeader", lang);
+        QuickBrowseDescLabel.Text = LocalizationService.GetString("QuickBrowseDesc", lang);
+        QuickShellHeaderLabel.Text = LocalizationService.GetString("QuickShellHeader", lang);
+        QuickShellDescLabel.Text = LocalizationService.GetString("QuickShellDesc", lang);
+        QuickHelpHeaderLabel.Text = LocalizationService.GetString("QuickHelpHeader", lang);
+        QuickHelpDescLabel.Text = LocalizationService.GetString("QuickHelpDesc", lang);
+
+        // 5. Recent Empty State
+        DashboardRecentHeaderLabel.Text = LocalizationService.GetString("DashboardRecentHeader", lang);
+        RecentEmptyTitleLabel.Text = LocalizationService.GetString("RecentEmptyTitle", lang);
+        RecentEmptyDescLabel.Text = LocalizationService.GetString("RecentEmptyDesc", lang);
+
+        // 6. Try Header
+        DashboardTryHeaderLabel.Text = LocalizationService.GetString("DashboardTryHeader", lang);
+
+        // 7. Empty Search State
+        EmptyResultsText.Text = LocalizationService.GetString("ResultsEmptyTitle", lang);
+        EmptyResultsDescText.Text = LocalizationService.GetString("ResultsEmptyDesc", lang);
+
+        // 8. Settings Headers & Tabs
+        SettingsTabButton.Content = LocalizationService.GetString("SettingsTab", lang);
+        HelpTabButton.Content = LocalizationService.GetString("HelpTab", lang);
+        EscBackLabel.Text = LocalizationService.GetString("EscBack", lang);
+
+        // 9. General Settings Cards
+        SettingPreviewTitleText.Text = LocalizationService.GetString("SettingPreviewTitle", lang);
+        SettingPreviewDescText.Text = LocalizationService.GetString("SettingPreviewDesc", lang);
+        SettingStartupTitleText.Text = LocalizationService.GetString("SettingStartupTitle", lang);
+        SettingStartupDescText.Text = LocalizationService.GetString("SettingStartupDesc", lang);
+        SettingBackdropTitleText.Text = LocalizationService.GetString("SettingBackdropTitle", lang);
+        SettingBackdropDescText.Text = LocalizationService.GetString("SettingBackdropDesc", lang);
+        SettingThemeText.Text = LocalizationService.GetString("SettingTheme", lang);
+        SettingThemeDescText.Text = LocalizationService.GetString("SettingThemeDesc", lang);
+        SettingMaterialText.Text = LocalizationService.GetString("SettingMaterial", lang);
+        SettingMaterialDescText.Text = LocalizationService.GetString("SettingMaterialDesc", lang);
+        SettingSurfaceText.Text = LocalizationService.GetString("SettingSurface", lang);
+        SettingSurfaceDescText.Text = LocalizationService.GetString("SettingSurfaceDesc", lang);
+        SettingLanguageText.Text = LocalizationService.GetString("SettingLanguage", lang);
+        SettingLanguageDescText.Text = LocalizationService.GetString("SettingLanguageDesc", lang);
+
+        // 10. Settings Updates Card
+        SettingUpdatesTitleText.Text = LocalizationService.GetString("SettingUpdatesTitle", lang);
+        CurrentVersionText.Text = string.Format(LocalizationService.GetString("SettingUpdatesCurrentVersion", lang), UpdateService.CurrentVersion);
+        CheckUpdatesButton.Content = LocalizationService.GetString("SettingUpdatesCheck", lang);
+        if (_availableUpdate != null && _availableUpdate.IsUpdateAvailable)
+        {
+            UpdateStatusText.Text = string.Format(LocalizationService.GetString("SettingUpdatesAvailable", lang), _availableUpdate.TagName);
+            DownloadUpdateButton.Content = LocalizationService.GetString("SettingUpdatesDownload", lang);
+        }
+        else
+        {
+            UpdateStatusText.Text = LocalizationService.GetString("SettingUpdatesStatus", lang);
+        }
+
+        // 11. Settings Shortcut Card
+        SettingShortcutTitleText.Text = LocalizationService.GetString("SettingShortcutTitle", lang);
+        SettingShortcutDescText.Text = LocalizationService.GetString("SettingShortcutDesc", lang);
+
+        // 12. Help Panel Shortcuts & Info
+        HelpShortcutsTitleText.Text = LocalizationService.GetString("HelpShortcutsTitle", lang);
+        HelpShortcutsToggleTitleText.Text = LocalizationService.GetString("HelpShortcutsToggleTitle", lang);
+        HelpShortcutsToggleDescText.Text = LocalizationService.GetString("HelpShortcutsToggleDesc", lang);
+        HelpShortcutsOpenTitleText.Text = LocalizationService.GetString("HelpShortcutsOpenTitle", lang);
+        HelpShortcutsOpenDescText.Text = LocalizationService.GetString("HelpShortcutsOpenDesc", lang);
+        HelpShortcutsAdminTitleText.Text = LocalizationService.GetString("HelpShortcutsAdminTitle", lang);
+        HelpShortcutsAdminDescText.Text = LocalizationService.GetString("HelpShortcutsAdminDesc", lang);
+        HelpShortcutsExplorerTitleText.Text = LocalizationService.GetString("HelpShortcutsExplorerTitle", lang);
+        HelpShortcutsExplorerDescText.Text = LocalizationService.GetString("HelpShortcutsExplorerDesc", lang);
+        HelpShortcutsCopyTitleText.Text = LocalizationService.GetString("HelpShortcutsCopyTitle", lang);
+        HelpShortcutsCopyDescText.Text = LocalizationService.GetString("HelpShortcutsCopyDesc", lang);
+
+        // Help Shell Card
+        HelpShellTitleText.Text = LocalizationService.GetString("HelpShellTitle", lang);
+        HelpShellDescText.Text = LocalizationService.GetString("HelpShellDesc", lang);
+        HelpShellExampleText.Text = LocalizationService.GetString("HelpShellExample", lang);
+        HelpShellBullet1Text.Text = LocalizationService.GetString("HelpShellBullet1", lang);
+        HelpShellBullet2Text.Text = LocalizationService.GetString("HelpShellBullet2", lang);
+
+        // Help Calc Card
+        HelpCalcTitleText.Text = LocalizationService.GetString("HelpCalcTitle", lang);
+        HelpCalcDescText.Text = LocalizationService.GetString("HelpCalcDesc", lang);
+        HelpCalcOperatorsText.Text = LocalizationService.GetString("HelpCalcOperators", lang);
+        HelpCalcBullet1Text.Text = LocalizationService.GetString("HelpCalcBullet1", lang);
+
+        // 13. Details Pane Labels
+        DetailTypeLocationLabel.Text = LocalizationService.GetString("DetailTypeLocation", lang);
+        DetailTypeAppIdLabel.Text = LocalizationService.GetString("DetailTypeAppId", lang);
+        DetailTypeExpressionLabel.Text = LocalizationService.GetString("DetailTypeExpression", lang);
+        DetailTypeResultLabel.Text = LocalizationService.GetString("DetailTypeResult", lang);
+        DetailTypeCommandLabel.Text = LocalizationService.GetString("DetailTypeCommand", lang);
+        DetailTypeHelpLabel.Text = LocalizationService.GetString("DetailTypeHelp", lang);
+        ActionTitleLabel.Text = LocalizationService.GetString("ActionTitle", lang);
+        ActionCopyResultText.Text = LocalizationService.GetString("ActionCopyResult", lang);
+        ActionRunAdminText.Text = LocalizationService.GetString("ActionRunAdmin", lang);
+        ActionShowExplorerText.Text = LocalizationService.GetString("ActionShowExplorer", lang);
+
+        // 14. Footer Shortcuts
+        FooterToggleText.Text = LocalizationService.GetString("FooterToggleText", lang);
+        FooterNavigateText.Text = LocalizationService.GetString("FooterNavigateText", lang);
+        FooterLaunchText.Text = LocalizationService.GetString("FooterLaunchText", lang);
+        FooterDismissText.Text = LocalizationService.GetString("FooterDismissText", lang);
+
+        // 15. Refresh Details Panel and Search Results
+        if (!_isDashboardVisible && !_isSettingsVisible)
+        {
+            UpdateSearch(SearchBox.Text);
+            UpdateDetailPanel();
+        }
+        else
+        {
+            RefreshRecentItems();
+        }
     }
 
 }
