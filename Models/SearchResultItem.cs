@@ -3,8 +3,15 @@ using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace WinCast.Models;
 
-public class SearchResultItem
+public class SearchResultItem : System.ComponentModel.INotifyPropertyChanged
 {
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+    protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+    {
+        PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
+    }
+
     public string Name { get; }
     public string Path { get; }
     public string AUMID { get; }
@@ -26,6 +33,24 @@ public class SearchResultItem
     public bool IsWebUrl { get; }
     public string WebUrl { get; }
     public bool IsWebSearch { get; }
+
+    // AI Integration
+    public bool IsAI { get; }
+    public string AIPrompt { get; set; }
+    
+    private string _aiResponse = "";
+    public string AIResponse
+    {
+        get => _aiResponse;
+        set
+        {
+            if (_aiResponse != value)
+            {
+                _aiResponse = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     // For category header rows injected into the list
     public bool IsHeader { get; }
@@ -51,7 +76,10 @@ public class SearchResultItem
         string systemAction = "",
         bool isWebUrl = false,
         string webUrl = "",
-        bool isWebSearch = false)
+        bool isWebSearch = false,
+        bool isAI = false,
+        string aiPrompt = "",
+        string aiResponse = "")
     {
         Name = name;
         Path = path;
@@ -72,6 +100,9 @@ public class SearchResultItem
         IsWebUrl = isWebUrl;
         WebUrl = webUrl;
         IsWebSearch = isWebSearch;
+        IsAI = isAI;
+        AIPrompt = aiPrompt;
+        _aiResponse = aiResponse;
     }
 
     // Header-only constructor
@@ -93,6 +124,9 @@ public class SearchResultItem
         IsWebUrl = false;
         WebUrl = string.Empty;
         IsWebSearch = false;
+        IsAI = false;
+        AIPrompt = string.Empty;
+        _aiResponse = string.Empty;
     }
 
     public static SearchResultItem CreateHeader(string text) => new(text);
@@ -115,6 +149,9 @@ public class SearchResultItem
     public Visibility WebSearchVisibility =>
         IsWebSearch ? Visibility.Visible : Visibility.Collapsed;
 
+    public Visibility AIVisibility =>
+        IsAI ? Visibility.Visible : Visibility.Collapsed;
+
     public Visibility WebAnyVisibility =>
         (IsWebUrl || IsWebSearch) ? Visibility.Visible : Visibility.Collapsed;
 
@@ -122,10 +159,10 @@ public class SearchResultItem
         IsHelp ? Visibility.Collapsed : Visibility.Visible;
 
     public Visibility UwpVisibility =>
-        (IsCalculator || IsShellCommand || IsSystemCommand || IsWebUrl || IsWebSearch) ? Visibility.Collapsed : Visibility.Visible;
+        (IsCalculator || IsShellCommand || IsSystemCommand || IsWebUrl || IsWebSearch || IsAI) ? Visibility.Collapsed : Visibility.Visible;
 
     public Visibility ImageVisibility =>
-        (IconSource != null && !IsCalculator && !IsShellCommand && !IsHelp && !IsSystemCommand && !IsWebUrl && !IsWebSearch) ? Visibility.Visible : Visibility.Collapsed;
+        (IconSource != null && !IsCalculator && !IsShellCommand && !IsHelp && !IsSystemCommand && !IsWebUrl && !IsWebSearch && !IsAI) ? Visibility.Visible : Visibility.Collapsed;
 
     public Visibility HeaderVisibility =>
         IsHeader ? Visibility.Visible : Visibility.Collapsed;
@@ -140,6 +177,7 @@ public class SearchResultItem
         : IsSystemCommand ? "System"
         : IsWebUrl ? "Web"
         : IsWebSearch ? "Search"
+        : IsAI ? "AI"
         : IsUWP ? "UWP"
         : "Win32";
 }

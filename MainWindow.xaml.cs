@@ -1,12 +1,15 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Documents;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics.Imaging;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -17,11 +20,13 @@ namespace WinCast;
 
 public sealed partial class MainWindow : Window
 {
+    private const string DefaultFreeApiKeyEnvironmentVariable = "WINCAST_OPENROUTER_API_KEY";
     private IntPtr _hwnd;
     private List<AppItem> _apps = new();
     private readonly ObservableCollection<SearchResultItem> _searchResults = new();
     private List<RecentAppEntry> _recentEntries = new();
     private CancellationTokenSource? _searchCts;
+    private bool _isAiMode = false;
     private bool _isScanning;
     private bool _scanPending;
     private bool _isVisible = true;
@@ -34,6 +39,10 @@ public sealed partial class MainWindow : Window
     private CancellationTokenSource? _debounceCts;
     private UpdateInfo? _availableUpdate;
     private bool _isUpdateDownloading;
+    private string _lastAiResponseText = "";
+    private bool _modelsLoadedForProvider = false;
+    private string _lastLoadedProvider = "";
+    private CancellationTokenSource? _modelsDebounceCts;
 
     public MainWindow()
     {
@@ -97,6 +106,9 @@ public sealed partial class MainWindow : Window
         BackdropComboBox.SelectionChanged += BackdropComboBox_SelectionChanged;
         SurfaceOpacityComboBox.SelectionChanged += SurfaceOpacityComboBox_SelectionChanged;
         LanguageComboBox.SelectionChanged += LanguageComboBox_SelectionChanged;
+        OpenRouterApiKeyBox.PasswordChanged += OpenRouterApiKeyBox_PasswordChanged;
+        AiProviderComboBox.SelectionChanged += AiProviderComboBox_SelectionChanged;
+        ModelComboBox.SelectionChanged += ModelComboBox_SelectionChanged;
         SettingsTabButton.Click += (s, e) => SwitchSettingsTab(true);
         HelpTabButton.Click += (s, e) => SwitchSettingsTab(false);
 
@@ -293,6 +305,8 @@ public sealed partial class MainWindow : Window
         {
             ResultsPanel.Visibility = Visibility.Collapsed;
             ResultsPanel.Opacity = 0;
+            ResultsListView.Visibility = Visibility.Visible;
+            AiChatPanel.Visibility = Visibility.Collapsed;
             DashboardPanel.Visibility = Visibility.Visible;
             DashboardPanel.Opacity = 1;
         }
@@ -338,15 +352,32 @@ public sealed partial class MainWindow : Window
     //  Search
     // ═══════════════════════════════════════════════════
 
-    private void UpdateSearch(string query)
+    private void UpdateSearch(string? query)
     {
+        if (_isAiMode)
+        {
+            ResultsPanel.Visibility = Visibility.Visible;
+            ResultsPanel.Opacity = 1;
+            DashboardPanel.Visibility = Visibility.Collapsed;
+            DashboardPanel.Opacity = 0;
+            _isDashboardVisible = false;
+
+            ResultsListView.Visibility = Visibility.Collapsed;
+            EmptyResultsPanel.Visibility = Visibility.Collapsed;
+            ShowAiChatPanel();
+            SetPreviewPaneVisibility(false);
+            return; // Suppress normal search entirely
+        }
+
+        string nonNullQuery = query ?? string.Empty;
         _searchCts?.Cancel();
         _searchCts = new CancellationTokenSource();
-        _ = UpdateSearchAsync(query, _searchCts.Token);
+        _ = UpdateSearchAsync(nonNullQuery, _searchCts.Token);
     }
 
     private async Task UpdateSearchAsync(string query, CancellationToken ct)
     {
+        string lang = SettingsService.Instance.Language;
         if (string.IsNullOrWhiteSpace(query))
         {
             if (ct.IsCancellationRequested) return;
@@ -364,9 +395,13 @@ public sealed partial class MainWindow : Window
 
         _searchResults.Clear();
 
+        
+            ResultsListView.Visibility = Visibility.Visible;
+            AiChatPanel.Visibility = Visibility.Collapsed;
+        
+
         if (rawResults.Count == 0)
         {
-            string lang = SettingsService.Instance.Language;
             EmptyResultsPanel.Visibility = Visibility.Visible;
             EmptyResultsText.Text = string.Format(LocalizationService.GetString("NoResultsFor", lang), query);
             SetPreviewPaneVisibility(false);
@@ -381,11 +416,19 @@ public sealed partial class MainWindow : Window
         for (int i = 0; i < count; i++)
         {
             var res = rawResults[i];
-            string category = res.IsCalculator ? "Calculator" : (res.IsShellCommand ? "Command" : (res.IsHelp ? "Help & Shortcuts" : "Applications"));
+            string category = res.IsAI ? "AI" : (res.IsCalculator ? "Calculator" : (res.IsShellCommand ? "Command" : (res.IsHelp ? "Help & Shortcuts" : "Applications")));
 
             if (category != lastCategory)
             {
-                _searchResults.Add(SearchResultItem.CreateHeader(category.ToUpperInvariant()));
+                string headerText = category switch
+                {
+                    "AI" => LocalizationService.GetString("PluginNameAI", lang),
+                    "Calculator" => LocalizationService.GetString("PluginNameCalculator", lang),
+                    "Command" => LocalizationService.GetString("PluginNameShell", lang),
+                    "Help & Shortcuts" => LocalizationService.GetString("PluginNameHelp", lang),
+                    _ => LocalizationService.GetString("PluginNameApps", lang)
+                };
+                _searchResults.Add(SearchResultItem.CreateHeader(headerText.ToUpperInvariant()));
                 lastCategory = category;
             }
 
@@ -420,7 +463,10 @@ public sealed partial class MainWindow : Window
                 res.SystemAction,
                 res.IsWebUrl,
                 res.WebUrl,
-                res.IsWebSearch));
+                res.IsWebSearch,
+                res.IsAI,
+                res.AIPrompt,
+                res.AIResponse));
         }
 
         // Auto-select first non-header item
@@ -432,6 +478,7 @@ public sealed partial class MainWindow : Window
                 if (!_searchResults[i].IsHeader) { firstContent = i; break; }
             }
             ResultsListView.SelectedIndex = firstContent;
+
             SetPreviewPaneVisibility(true);
         }
         else
@@ -481,6 +528,8 @@ public sealed partial class MainWindow : Window
         DetailWebIcon.Visibility = Visibility.Collapsed;
         DetailSearchIcon.Visibility = Visibility.Collapsed;
         DetailAppIcon.Visibility = Visibility.Collapsed;
+        DetailAIIcon.Visibility = Visibility.Collapsed;
+        DetailAIContainer.Visibility = Visibility.Collapsed;
 
         if (selectedItem.IsCalculator)
         {
@@ -622,6 +671,33 @@ public sealed partial class MainWindow : Window
             ActionAdminGrid.Visibility = Visibility.Collapsed;
             ActionLocationGrid.Visibility = Visibility.Collapsed;
             ActionCopyPathGrid.Visibility = Visibility.Collapsed;
+        }
+        else if (selectedItem.IsAI)
+        {
+            string lang = SettingsService.Instance.Language;
+            DetailAIIcon.Visibility = Visibility.Visible;
+            DetailTitleText.Text = selectedItem.Name;
+            TypeBadgeText.Text = "AI";
+            TypeBadge.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                Microsoft.UI.ColorHelper.FromArgb(0xFF, 0x8B, 0x5C, 0xF6));
+
+            DetailPathContainer.Visibility = Visibility.Collapsed;
+            DetailAumidContainer.Visibility = Visibility.Collapsed;
+            DetailEquationContainer.Visibility = Visibility.Collapsed;
+            DetailResultContainer.Visibility = Visibility.Collapsed;
+            DetailCommandContainer.Visibility = Visibility.Collapsed;
+            DetailHelpContainer.Visibility = Visibility.Collapsed;
+            DetailAIContainer.Visibility = Visibility.Visible;
+            DetailUserPromptText.Text = selectedItem.AIPrompt;
+            DetailAIText.Text = selectedItem.AIResponse;
+
+            ActionOpenGrid.Visibility = Visibility.Visible;
+            ActionOpenText.Text = LocalizationService.GetString("AIPressEnter", lang);
+            ActionCopyResultGrid.Visibility = Visibility.Collapsed;
+            ActionAdminGrid.Visibility = Visibility.Collapsed;
+            ActionLocationGrid.Visibility = Visibility.Collapsed;
+            ActionCopyPathGrid.Visibility = Visibility.Visible;
+            ActionCopyPathText.Text = LocalizationService.GetString("ActionCopyResult", lang);
         }
         else
         {
@@ -1028,6 +1104,12 @@ public sealed partial class MainWindow : Window
         SeedSearch("> ipconfig");
     }
 
+    private void ExampleAIButton_Click(object sender, RoutedEventArgs e)
+    {
+        string lang = SettingsService.Instance.Language;
+        SeedSearch(LocalizationService.GetString("ExampleAIPrompt", lang));
+    }
+
     // ═══════════════════════════════════════════════════
     //  Launch Actions
     // ═══════════════════════════════════════════════════
@@ -1039,6 +1121,12 @@ public sealed partial class MainWindow : Window
 
         var selected = _searchResults[index];
         if (selected.IsHeader) return;
+
+        if (selected.IsAI)
+        {
+            _ = QueryAIAsync(selected);
+            return;
+        }
 
         if (selected.IsCalculator)
         {
@@ -1193,12 +1281,13 @@ public sealed partial class MainWindow : Window
         var selected = _searchResults[index];
         if (selected.IsHeader) return;
 
-        string textToCopy = selected.IsCalculator ? selected.CalcResult
+        string textToCopy = selected.IsAI ? selected.AIResponse
+                          : (selected.IsCalculator ? selected.CalcResult
                           : (selected.IsShellCommand ? selected.ShellCommandText
                           : (selected.IsHelp ? $"{selected.Name}: {selected.Path}\n{selected.HelpDetail}"
                           : (selected.IsWebUrl ? selected.WebUrl
                           : (selected.IsWebSearch ? selected.Path
-                          : (selected.IsUWP ? selected.AUMID : selected.Path)))));
+                          : (selected.IsUWP ? selected.AUMID : selected.Path))))));
         if (string.IsNullOrEmpty(textToCopy)) return;
 
         var dataPackage = new DataPackage();
@@ -1222,6 +1311,32 @@ public sealed partial class MainWindow : Window
 
         if (key == Windows.System.VirtualKey.Enter)
         {
+            if (_isAiMode)
+            {
+                string prompt = SearchBox.Text?.Trim() ?? string.Empty;
+                if (!string.IsNullOrEmpty(prompt))
+                {
+                    AiChatUserPromptText.Text = prompt;
+                    SearchBox.Text = string.Empty;
+                    
+                    var aiItem = new SearchResultItem(
+                        name: "AI Prompt",
+                        path: "",
+                        aumid: "",
+                        isUwp: false,
+                        isCalculator: false,
+                        calcResult: "",
+                        iconSource: null,
+                        category: "AI",
+                        isAI: true,
+                        aiPrompt: prompt,
+                        aiResponse: ""
+                    );
+                    _ = QueryAIAsync(aiItem);
+                }
+                return true;
+            }
+
             if (ctrl && shift) LaunchSelectedAsAdmin();
             else LaunchSelected();
             return true;
@@ -1247,6 +1362,7 @@ public sealed partial class MainWindow : Window
             WindowHelper.CenterWindow(_hwnd, 800, 530);
             NativeMethods.ShowWindow(_hwnd, NativeMethods.SW_SHOW);
             WindowHelper.ForceForeground(_hwnd);
+            if (_isAiMode) ExitAiMode();
             SearchBox.Text = string.Empty;
             SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
             // Reset to dashboard
@@ -1264,8 +1380,77 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private void EnterAiMode()
+    {
+        _isAiMode = true;
+        SearchIcon.Visibility = Visibility.Collapsed;
+        AiModeBadge.Visibility = Visibility.Visible;
+        
+        string lang = SettingsService.Instance.Language;
+        AiChatUserPromptText.Text = LocalizationService.GetString("AIAskPromptPlaceholder", lang);
+        SetAiChatResponse("");
+    }
+
+    private void ExitAiMode()
+    {
+        _isAiMode = false;
+        SearchIcon.Visibility = Visibility.Visible;
+        AiModeBadge.Visibility = Visibility.Collapsed;
+        
+        AiChatPanel.Visibility = Visibility.Collapsed;
+        SearchBox.Text = string.Empty;
+    }
+
+    private void ExitAiModeButton_Click(object sender, RoutedEventArgs e)
+    {
+        ExitAiMode();
+    }
+
+    private void AiResponsePanel_PointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        if (AiResponseSubtitle != null && !string.IsNullOrEmpty(AiChatModelInfoText.Text))
+        {
+            AiResponseSubtitle.Visibility = Visibility.Visible;
+        }
+    }
+
+    private void AiResponsePanel_PointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        if (AiResponseSubtitle != null)
+        {
+            AiResponseSubtitle.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void AiCopyResponseButton_Click(object sender, RoutedEventArgs e)
+    {
+        string textToCopy = _lastAiResponseText;
+        if (string.IsNullOrEmpty(textToCopy)) return;
+
+        var dataPackage = new DataPackage();
+        dataPackage.SetText(textToCopy);
+        Clipboard.SetContent(dataPackage);
+
+        string lang = SettingsService.Instance.Language;
+        var prev = FooterStatusText.Text;
+        FooterStatusText.Text = LocalizationService.GetString("CopiedStatus", lang);
+        _ = Task.Delay(1800).ContinueWith(_ =>
+            DispatcherQueue.TryEnqueue(() => FooterStatusText.Text = prev));
+    }
+
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        => UpdateSearch(SearchBox.Text);
+    {
+        string text = SearchBox.Text;
+        if (!_isAiMode && text.StartsWith("-"))
+        {
+            EnterAiMode();
+            string remaining = text.Substring(1).TrimStart();
+            SearchBox.Text = remaining;
+            SearchBox.SelectionStart = remaining.Length;
+            return;
+        }
+        UpdateSearch(text);
+    }
 
     private void SearchBox_KeyDown(object sender, KeyRoutedEventArgs e)
     {
@@ -1273,6 +1458,14 @@ public sealed partial class MainWindow : Window
 
         switch (e.Key)
         {
+            case Windows.System.VirtualKey.Back:
+                if (_isAiMode && string.IsNullOrEmpty(SearchBox.Text))
+                {
+                    ExitAiMode();
+                    e.Handled = true;
+                    return;
+                }
+                break;
             case Windows.System.VirtualKey.Down:
                 if (!_isDashboardVisible)
                 {
@@ -1466,6 +1659,7 @@ public sealed partial class MainWindow : Window
 
             ShowPreviewToggle.IsOn = SettingsService.Instance.ShowPreview;
             LaunchOnStartupToggle.IsOn = SettingsService.Instance.LaunchOnStartup;
+            OpenRouterApiKeyBox.Password = SettingsService.Instance.OpenRouterApiKey;
             CurrentVersionText.Text = string.Format(LocalizationService.GetString("SettingUpdatesCurrentVersion", SettingsService.Instance.Language), UpdateService.CurrentVersion);
             UpdateStatusText.Text = LocalizationService.GetString("SettingUpdatesStatus", SettingsService.Instance.Language);
             DownloadUpdateButton.Visibility = _availableUpdate?.IsUpdateAvailable == true
@@ -1501,6 +1695,43 @@ public sealed partial class MainWindow : Window
                 "ar" => 1,
                 _ => 0
             };
+
+            AiProviderComboBox.SelectedIndex = SettingsService.Instance.AiProvider switch
+            {
+                "Custom" => 1,
+                _ => 0
+            };
+            AiKeySettingsGrid.Visibility = SettingsService.Instance.AiProvider == "Custom"
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            // Select the saved model in ModelComboBox
+            string savedModel = SettingsService.Instance.FreeModel;
+            int foundIndex = -1;
+            for (int i = 0; i < ModelComboBox.Items.Count; i++)
+            {
+                if (ModelComboBox.Items[i] is ComboBoxItem item && item.Tag?.ToString() == savedModel)
+                {
+                    foundIndex = i;
+                    break;
+                }
+            }
+
+            if (foundIndex >= 0)
+            {
+                ModelComboBox.SelectedIndex = foundIndex;
+            }
+            else
+            {
+                // If it's not in the list (e.g. not loaded yet), add it temporarily
+                var tempItem = new ComboBoxItem { Content = savedModel, Tag = savedModel };
+                ModelComboBox.Items.Add(tempItem);
+                ModelComboBox.SelectedIndex = ModelComboBox.Items.Count - 1;
+            }
+
+            ModelSettingsGrid.Visibility = Visibility.Visible;
+
+            _ = FetchModelsAsync();
 
             SwitchSettingsTab(true);
             SettingsPanel.Visibility = Visibility.Visible;
@@ -1544,6 +1775,183 @@ public sealed partial class MainWindow : Window
         if (LaunchOnStartupToggle == null) return;
         SettingsService.Instance.LaunchOnStartup = LaunchOnStartupToggle.IsOn;
         SettingsService.Save();
+    }
+
+    private void OpenRouterApiKeyBox_PasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (OpenRouterApiKeyBox == null) return;
+        SettingsService.Instance.OpenRouterApiKey = OpenRouterApiKeyBox.Password;
+        SettingsService.Save();
+
+        if (SettingsService.Instance.AiProvider == "Custom")
+        {
+            _modelsLoadedForProvider = false;
+            DebounceFetchModels();
+        }
+    }
+
+    private void AiProviderComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (AiProviderComboBox == null) return;
+        string? val = (AiProviderComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "Free";
+
+        if (SettingsService.Instance.AiProvider != val)
+        {
+            SettingsService.Instance.AiProvider = val;
+            SettingsService.Save();
+        }
+
+        if (AiKeySettingsGrid != null)
+        {
+            AiKeySettingsGrid.Visibility = val == "Custom" ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        if (ModelSettingsGrid != null)
+        {
+            ModelSettingsGrid.Visibility = Visibility.Visible;
+        }
+
+        _modelsLoadedForProvider = false;
+        _ = FetchModelsAsync();
+    }
+
+    private void ModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ModelComboBox == null || ModelComboBox.SelectedItem == null) return;
+        string? val = (ModelComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+        if (string.IsNullOrEmpty(val)) return;
+
+        if (SettingsService.Instance.FreeModel != val)
+        {
+            SettingsService.Instance.FreeModel = val;
+            SettingsService.Save();
+        }
+    }
+
+    private void DebounceFetchModels()
+    {
+        _modelsDebounceCts?.Cancel();
+        _modelsDebounceCts = new CancellationTokenSource();
+        var token = _modelsDebounceCts.Token;
+        _ = Task.Delay(1000, token).ContinueWith(t =>
+        {
+            if (!t.IsCanceled)
+            {
+                DispatcherQueue.TryEnqueue(() => _ = FetchModelsAsync());
+            }
+        });
+    }
+
+    private async Task FetchModelsAsync()
+    {
+        string currentProvider = SettingsService.Instance.AiProvider;
+        string apiKey = GetOpenRouterApiKey();
+
+        if (_modelsLoadedForProvider && _lastLoadedProvider == currentProvider) return;
+
+        try
+        {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "WinCast/1.0");
+
+            if (!string.IsNullOrWhiteSpace(apiKey))
+            {
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+            }
+            
+            var response = await client.GetAsync("https://openrouter.ai/api/v1/models");
+            if (!response.IsSuccessStatusCode) return;
+
+            var jsonString = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(jsonString);
+            var root = doc.RootElement;
+
+            if (root.TryGetProperty("data", out var dataArray) && dataArray.ValueKind == JsonValueKind.Array)
+            {
+                var models = new List<(string Id, string Name)>();
+                
+                models.Add(("openrouter/free", "Auto Free Router"));
+
+                foreach (var modelElement in dataArray.EnumerateArray())
+                {
+                    if (modelElement.TryGetProperty("id", out var idProp) && 
+                        modelElement.TryGetProperty("name", out var nameProp))
+                    {
+                        string id = idProp.GetString() ?? string.Empty;
+                        string name = nameProp.GetString() ?? string.Empty;
+
+                        if (id == "openrouter/free") continue;
+
+                        if (currentProvider == "Free")
+                        {
+                            double promptPrice = 0;
+                            double completionPrice = 0;
+
+                            if (modelElement.TryGetProperty("pricing", out var pricingProp))
+                            {
+                                if (pricingProp.TryGetProperty("prompt", out var promptProp))
+                                {
+                                    if (promptProp.ValueKind == JsonValueKind.String)
+                                        double.TryParse(promptProp.GetString(), out promptPrice);
+                                    else if (promptProp.ValueKind == JsonValueKind.Number)
+                                        promptPrice = promptProp.GetDouble();
+                                }
+
+                                if (pricingProp.TryGetProperty("completion", out var completionProp))
+                                {
+                                    if (completionProp.ValueKind == JsonValueKind.String)
+                                        double.TryParse(completionProp.GetString(), out completionPrice);
+                                    else if (completionProp.ValueKind == JsonValueKind.Number)
+                                        completionPrice = completionProp.GetDouble();
+                                }
+                            }
+
+                            if (promptPrice == 0 && completionPrice == 0)
+                            {
+                                models.Add((id, name));
+                            }
+                        }
+                        else
+                        {
+                            models.Add((id, name));
+                        }
+                    }
+                }
+
+                if (models.Count > 1)
+                {
+                    _modelsLoadedForProvider = true;
+                    _lastLoadedProvider = currentProvider;
+                    
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        string currentSelectedTag = (ModelComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() 
+                            ?? SettingsService.Instance.FreeModel;
+
+                        ModelComboBox.Items.Clear();
+                        int selectedIndex = 0;
+
+                        for (int i = 0; i < models.Count; i++)
+                        {
+                            var m = models[i];
+                            var cbItem = new ComboBoxItem { Content = m.Name, Tag = m.Id };
+                            ModelComboBox.Items.Add(cbItem);
+
+                            if (m.Id == currentSelectedTag)
+                            {
+                                selectedIndex = i;
+                            }
+                        }
+
+                        ModelComboBox.SelectedIndex = selectedIndex;
+                    });
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // Fallback: If fetch fails, keep existing.
+        }
     }
 
     private async void CheckUpdatesButton_Click(object sender, RoutedEventArgs e)
@@ -1903,6 +2311,21 @@ public sealed partial class MainWindow : Window
         // 7. Empty Search State
         EmptyResultsText.Text = LocalizationService.GetString("ResultsEmptyTitle", lang);
         EmptyResultsDescText.Text = LocalizationService.GetString("ResultsEmptyDesc", lang);
+        
+        // 13. AI Localization
+        AiChatUserLabel.Text = LocalizationService.GetString("DetailUserLabel", lang);
+        AiChatAILabel.Text = LocalizationService.GetString("AIResponseLabel", lang);
+        ExampleAIButton.Content = LocalizationService.GetString("ExampleAIPrompt", lang);
+        SettingAITitleText.Text = LocalizationService.GetString("SettingAITitle", lang);
+        SettingAIDescText.Text = LocalizationService.GetString("SettingAIDesc", lang);
+        SettingAIProviderTitleText.Text = LocalizationService.GetString("SettingAIProviderTitle", lang);
+        SettingAIProviderDescText.Text = LocalizationService.GetString("SettingAIProviderDesc", lang);
+        SettingModelTitleText.Text = LocalizationService.GetString("SettingModelTitle", lang);
+        SettingModelDescText.Text = LocalizationService.GetString("SettingModelDesc", lang);
+        AiProviderFreeItem.Content = LocalizationService.GetString("AiProviderFree", lang);
+        AiProviderCustomItem.Content = LocalizationService.GetString("AiProviderCustom", lang);
+        SettingAIKeyHeaderText.Text = LocalizationService.GetString("SettingAIKeyHeader", lang);
+        OpenRouterApiKeyBox.PlaceholderText = LocalizationService.GetString("SettingAIKeyPlaceholder", lang);
 
         // 8. Settings Headers & Tabs
         SettingsTabButton.Content = LocalizationService.GetString("SettingsTab", lang);
@@ -1924,6 +2347,19 @@ public sealed partial class MainWindow : Window
         SettingSurfaceDescText.Text = LocalizationService.GetString("SettingSurfaceDesc", lang);
         SettingLanguageText.Text = LocalizationService.GetString("SettingLanguage", lang);
         SettingLanguageDescText.Text = LocalizationService.GetString("SettingLanguageDesc", lang);
+
+        // 9b. AI Integration Card
+        SettingAITitleText.Text = LocalizationService.GetString("SettingAITitle", lang);
+        SettingAIDescText.Text = LocalizationService.GetString("SettingAIDesc", lang);
+        SettingAIProviderTitleText.Text = LocalizationService.GetString("SettingAIProviderTitle", lang);
+        SettingAIProviderDescText.Text = LocalizationService.GetString("SettingAIProviderDesc", lang);
+        SettingModelTitleText.Text = LocalizationService.GetString("SettingModelTitle", lang);
+        SettingModelDescText.Text = LocalizationService.GetString("SettingModelDesc", lang);
+        AiProviderFreeItem.Content = LocalizationService.GetString("AiProviderFree", lang);
+        AiProviderCustomItem.Content = LocalizationService.GetString("AiProviderCustom", lang);
+        SettingAIKeyHeaderText.Text = LocalizationService.GetString("SettingAIKeyHeader", lang);
+        SettingAIKeyDescText.Text = LocalizationService.GetString("SettingAIKeyPlaceholder", lang);
+        OpenRouterApiKeyBox.PlaceholderText = LocalizationService.GetString("SettingAIKeyPlaceholder", lang);
 
         // 10. Settings Updates Card
         SettingUpdatesTitleText.Text = LocalizationService.GetString("SettingUpdatesTitle", lang);
@@ -1976,6 +2412,10 @@ public sealed partial class MainWindow : Window
         DetailTypeResultLabel.Text = LocalizationService.GetString("DetailTypeResult", lang);
         DetailTypeCommandLabel.Text = LocalizationService.GetString("DetailTypeCommand", lang);
         DetailTypeHelpLabel.Text = LocalizationService.GetString("DetailTypeHelp", lang);
+        DetailTypeAILabel.Text = LocalizationService.GetString("AIResponseLabel", lang);
+        DetailUserLabel.Text = LocalizationService.GetString("DetailUserLabel", lang);
+        if (AiChatUserLabel != null) AiChatUserLabel.Text = LocalizationService.GetString("DetailUserLabel", lang);
+        if (AiChatAILabel != null) AiChatAILabel.Text = LocalizationService.GetString("AIResponseLabel", lang);
         ActionTitleLabel.Text = LocalizationService.GetString("ActionTitle", lang);
         ActionCopyResultText.Text = LocalizationService.GetString("ActionCopyResult", lang);
         ActionRunAdminText.Text = LocalizationService.GetString("ActionRunAdmin", lang);
@@ -1999,4 +2439,435 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private async Task QueryAIAsync(SearchResultItem selected)
+    {
+        AiChatModelInfoText.Text = "";
+        if (AiResponseSubtitle != null)
+        {
+            AiResponseSubtitle.Visibility = Visibility.Collapsed;
+        }
+
+        // 1. Check if API key is configured
+        string apiKey = GetOpenRouterApiKey();
+
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            selected.AIResponse = LocalizationService.GetString("AINoKey");
+            if (ResultsListView.SelectedItem == selected)
+            {
+                DetailAIText.Text = selected.AIResponse;
+            }
+            SetAiChatResponse(selected.AIResponse);
+            return;
+        }
+
+        // 2. Set status to thinking
+        selected.AIResponse = LocalizationService.GetString("AIThinking");
+        if (ResultsListView.SelectedItem == selected)
+        {
+            DetailAIText.Text = selected.AIResponse;
+        }
+        SetAiChatResponse(selected.AIResponse);
+        
+        AiThinkingRing.IsActive = true;
+        AiThinkingRing.Visibility = Visibility.Visible;
+        AiChatResponseRichText.Opacity = 0.6;
+
+        try
+        {
+            // 3. Make HTTP request to OpenRouter/free endpoint
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+            client.DefaultRequestHeaders.Add("HTTP-Referer", "https://github.com/ModerIRAQ/wincast");
+            client.DefaultRequestHeaders.Add("X-Title", "WinCast Launcher");
+
+            var requestBody = new
+            {
+                model = SettingsService.Instance.FreeModel,
+                messages = new[]
+                {
+                    new { role = "user", content = selected.AIPrompt }
+                }
+            };
+
+            var json = JsonSerializer.Serialize(requestBody);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            var response = await client.PostAsync("https://openrouter.ai/api/v1/chat/completions", content);
+            if (!response.IsSuccessStatusCode)
+            {
+                string errorText = $"HTTP {response.StatusCode}";
+                selected.AIResponse = string.Format(LocalizationService.GetString("AIError"), errorText);
+                if (ResultsListView.SelectedItem == selected)
+                {
+                    DetailAIText.Text = selected.AIResponse;
+                }
+                SetAiChatResponse(selected.AIResponse);
+                
+                AiThinkingRing.IsActive = false;
+                AiThinkingRing.Visibility = Visibility.Collapsed;
+                AiChatResponseRichText.Opacity = 1.0;
+                return;
+            }
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(responseJson);
+            var root = doc.RootElement;
+            
+            string actualModel = "";
+            if (root.TryGetProperty("model", out var modelProp))
+            {
+                actualModel = modelProp.GetString() ?? "";
+            }
+
+            if (root.TryGetProperty("choices", out var choices) && choices.GetArrayLength() > 0)
+            {
+                var firstChoice = choices[0];
+                if (firstChoice.TryGetProperty("message", out var message) && message.TryGetProperty("content", out var msgContent))
+                {
+                    string reply = msgContent.GetString() ?? "";
+                    selected.AIResponse = reply;
+                    if (!string.IsNullOrEmpty(actualModel))
+                    {
+                        AiChatModelInfoText.Text = "Model: " + actualModel;
+                    }
+                }
+                else
+                {
+                    selected.AIResponse = string.Format(LocalizationService.GetString("AIError"), "Malformed response");
+                }
+            }
+            else if (root.TryGetProperty("error", out var errorObj))
+            {
+                string errMsg = errorObj.TryGetProperty("message", out var msgVal) ? msgVal.GetString() ?? "Unknown error" : "Unknown error";
+                selected.AIResponse = string.Format(LocalizationService.GetString("AIError"), errMsg);
+            }
+            else
+            {
+                selected.AIResponse = string.Format(LocalizationService.GetString("AIError"), "Malformed response");
+            }
+        }
+        catch (Exception ex)
+        {
+            selected.AIResponse = string.Format(LocalizationService.GetString("AIError"), ex.Message);
+        }
+
+        // 4. Update details pane if still selected
+        if (ResultsListView.SelectedItem == selected)
+        {
+            DetailAIText.Text = selected.AIResponse;
+        }
+        SetAiChatResponse(selected.AIResponse);
+        
+        AiThinkingRing.IsActive = false;
+        AiThinkingRing.Visibility = Visibility.Collapsed;
+        
+        var sb = new Storyboard();
+        var opacityAnim = new DoubleAnimation { From = 0, To = 1, Duration = TimeSpan.FromMilliseconds(250), EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+        Storyboard.SetTarget(opacityAnim, AiChatResponseRichText);
+        Storyboard.SetTargetProperty(opacityAnim, "Opacity");
+        sb.Children.Add(opacityAnim);
+        sb.Begin();
+    }
+
+    private void ShowAiChatPanel()
+    {
+        if (AiChatPanel.Visibility != Visibility.Visible)
+        {
+            AiChatPanel.Visibility = Visibility.Visible;
+            
+            var sb = new Storyboard();
+            var opacityAnim = new DoubleAnimation { From = 0, To = 1, Duration = TimeSpan.FromMilliseconds(200), EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+            Storyboard.SetTarget(opacityAnim, AiChatPanel);
+            Storyboard.SetTargetProperty(opacityAnim, "Opacity");
+            sb.Children.Add(opacityAnim);
+            
+            var translateAnim = new DoubleAnimation { From = 12, To = 0, Duration = TimeSpan.FromMilliseconds(200), EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+            Storyboard.SetTarget(translateAnim, AiChatPanelTransform);
+            Storyboard.SetTargetProperty(translateAnim, "Y");
+            sb.Children.Add(translateAnim);
+            
+            sb.Begin();
+        }
+    }
+
+    private void SetAiChatResponse(string markdown)
+    {
+        _lastAiResponseText = markdown;
+        RenderMarkdown(AiChatResponseRichText, markdown);
+    }
+
+    private void RenderMarkdown(RichTextBlock richText, string markdown)
+    {
+        richText.Blocks.Clear();
+        if (string.IsNullOrEmpty(markdown)) return;
+
+        // Split by double newlines to find paragraphs/blocks
+        var paragraphs = markdown.Split(new[] { "\n\n" }, StringSplitOptions.None);
+
+        foreach (var pText in paragraphs)
+        {
+            if (string.IsNullOrWhiteSpace(pText)) continue;
+
+            var paragraph = new Paragraph();
+            string trimmed = pText.TrimStart();
+            
+            // Check if it's a header
+            int headerLevel = 0;
+            while (headerLevel < trimmed.Length && trimmed[headerLevel] == '#')
+            {
+                headerLevel++;
+            }
+
+            if (headerLevel > 0 && headerLevel < trimmed.Length && trimmed[headerLevel] == ' ')
+            {
+                string headerContent = trimmed.Substring(headerLevel + 1).Trim();
+                var span = new Span();
+                span.FontWeight = Microsoft.UI.Text.FontWeights.Bold;
+                span.FontSize = headerLevel switch
+                {
+                    1 => 18,
+                    2 => 16,
+                    3 => 14.5,
+                    _ => 13.5
+                };
+                
+                ParseInlineFormatting(span.Inlines, headerContent);
+                paragraph.Inlines.Add(span);
+                richText.Blocks.Add(paragraph);
+                continue;
+            }
+
+            // Check if it's a blockquote
+            if (trimmed.StartsWith(">"))
+            {
+                var span = new Span();
+                span.FontStyle = Windows.UI.Text.FontStyle.Italic;
+                span.Foreground = (Brush)Application.Current.Resources["TextMuted"];
+                
+                string quoteContent = trimmed.Substring(1).Trim();
+                ParseInlineFormatting(span.Inlines, quoteContent);
+                paragraph.Inlines.Add(span);
+                richText.Blocks.Add(paragraph);
+                continue;
+            }
+
+            // Check if it's a code block
+            if (pText.StartsWith("```") && pText.EndsWith("```"))
+            {
+                string codeLines = pText;
+                int firstNewline = codeLines.IndexOf('\n');
+                if (firstNewline >= 0)
+                {
+                    codeLines = codeLines.Substring(firstNewline + 1);
+                }
+                if (codeLines.EndsWith("```"))
+                {
+                    codeLines = codeLines.Substring(0, codeLines.Length - 3);
+                }
+                codeLines = codeLines.Trim();
+
+                var span = new Span();
+                span.FontFamily = new FontFamily("Consolas");
+                span.FontSize = 12.5;
+                span.Foreground = (Brush)Application.Current.Resources["AccentColor"];
+                
+                var lines = codeLines.Split('\n');
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    span.Inlines.Add(new Run { Text = lines[i] });
+                    if (i < lines.Length - 1)
+                    {
+                        span.Inlines.Add(new LineBreak());
+                    }
+                }
+                paragraph.Inlines.Add(span);
+                richText.Blocks.Add(paragraph);
+                continue;
+            }
+
+            // Check if it's a bullet list
+            var linesList = pText.Split('\n');
+            bool isList = false;
+            foreach (var line in linesList)
+            {
+                string trimmedLine = line.Trim();
+                if (trimmedLine.StartsWith("* ") || trimmedLine.StartsWith("- ") || trimmedLine.StartsWith("• "))
+                {
+                    isList = true;
+                    break;
+                }
+            }
+
+            if (isList)
+            {
+                foreach (var line in linesList)
+                {
+                    string trimmedLine = line.TrimStart();
+                    var listParagraph = new Paragraph();
+                    if (trimmedLine.StartsWith("* ") || trimmedLine.StartsWith("- ") || trimmedLine.StartsWith("• "))
+                    {
+                        listParagraph.Margin = new Thickness(12, 0, 0, 4);
+                        listParagraph.Inlines.Add(new Run { Text = "•  ", FontWeight = Microsoft.UI.Text.FontWeights.Bold, Foreground = (Brush)Application.Current.Resources["AccentColor"] });
+                        
+                        string lineContent = trimmedLine.Substring(2);
+                        ParseInlineFormatting(listParagraph.Inlines, lineContent);
+                    }
+                    else
+                    {
+                        ParseInlineFormatting(listParagraph.Inlines, line);
+                    }
+                    richText.Blocks.Add(listParagraph);
+                }
+                continue;
+            }
+
+            // Check if it's a numbered list
+            bool isNumberedList = false;
+            foreach (var line in linesList)
+            {
+                string trimmedLine = line.TrimStart();
+                int dotIdx = trimmedLine.IndexOf(". ");
+                if (dotIdx > 0 && dotIdx < 5)
+                {
+                    string numPart = trimmedLine.Substring(0, dotIdx);
+                    if (int.TryParse(numPart, out _))
+                    {
+                        isNumberedList = true;
+                        break;
+                    }
+                }
+            }
+
+            if (isNumberedList)
+            {
+                foreach (var line in linesList)
+                {
+                    string trimmedLine = line.TrimStart();
+                    var listParagraph = new Paragraph();
+                    int dotIdx = trimmedLine.IndexOf(". ");
+                    if (dotIdx > 0 && dotIdx < 5 && int.TryParse(trimmedLine.Substring(0, dotIdx), out var number))
+                    {
+                        listParagraph.Margin = new Thickness(12, 0, 0, 4);
+                        listParagraph.Inlines.Add(new Run { Text = $"{number}.  ", FontWeight = Microsoft.UI.Text.FontWeights.Bold, Foreground = (Brush)Application.Current.Resources["AccentColor"] });
+                        
+                        string lineContent = trimmedLine.Substring(dotIdx + 2);
+                        ParseInlineFormatting(listParagraph.Inlines, lineContent);
+                    }
+                    else
+                    {
+                        ParseInlineFormatting(listParagraph.Inlines, line);
+                    }
+                    richText.Blocks.Add(listParagraph);
+                }
+                continue;
+            }
+
+            // Regular paragraph
+            ParseInlineFormatting(paragraph.Inlines, pText);
+            richText.Blocks.Add(paragraph);
+        }
+    }
+
+    private void ParseInlineFormatting(InlineCollection inlines, string text)
+    {
+        int i = 0;
+        while (i < text.Length)
+        {
+            // 1. Check for bold/italic (***)
+            if (i + 2 < text.Length && text[i] == '*' && text[i + 1] == '*' && text[i + 2] == '*')
+            {
+                int end = text.IndexOf("***", i + 3);
+                if (end >= 0)
+                {
+                    var span = new Span { FontWeight = Microsoft.UI.Text.FontWeights.Bold, FontStyle = Windows.UI.Text.FontStyle.Italic };
+                    ParseInlineFormatting(span.Inlines, text.Substring(i + 3, end - i - 3));
+                    inlines.Add(span);
+                    i = end + 3;
+                    continue;
+                }
+            }
+
+            // 2. Check for bold (**)
+            if (i + 1 < text.Length && text[i] == '*' && text[i + 1] == '*')
+            {
+                int end = text.IndexOf("**", i + 2);
+                if (end >= 0)
+                {
+                    var span = new Span { FontWeight = Microsoft.UI.Text.FontWeights.Bold };
+                    ParseInlineFormatting(span.Inlines, text.Substring(i + 2, end - i - 2));
+                    inlines.Add(span);
+                    i = end + 2;
+                    continue;
+                }
+            }
+
+            // 3. Check for italic (*)
+            if (text[i] == '*')
+            {
+                int end = text.IndexOf('*', i + 1);
+                if (end >= 0)
+                {
+                    var span = new Span { FontStyle = Windows.UI.Text.FontStyle.Italic };
+                    ParseInlineFormatting(span.Inlines, text.Substring(i + 1, end - i - 1));
+                    inlines.Add(span);
+                    i = end + 1;
+                    continue;
+                }
+            }
+
+            // 4. Check for inline code (`)
+            if (text[i] == '`')
+            {
+                int end = text.IndexOf('`', i + 1);
+                if (end >= 0)
+                {
+                    var span = new Span
+                    {
+                        FontFamily = new FontFamily("Consolas"),
+                        FontSize = 12.5,
+                        Foreground = (Brush)Application.Current.Resources["AccentColor"]
+                    };
+                    span.Inlines.Add(new Run { Text = text.Substring(i + 1, end - i - 1) });
+                    inlines.Add(span);
+                    i = end + 1;
+                    continue;
+                }
+            }
+
+            // 5. Check for line break
+            if (text[i] == '\n')
+            {
+                inlines.Add(new LineBreak());
+                i++;
+                continue;
+            }
+
+            // Find next marker
+            int nextMarker = text.IndexOfAny(new char[] { '*', '`', '\n' }, i);
+            if (nextMarker < 0)
+            {
+                inlines.Add(new Run { Text = text.Substring(i) });
+                break;
+            }
+            else
+            {
+                if (nextMarker > i)
+                {
+                    inlines.Add(new Run { Text = text.Substring(i, nextMarker - i) });
+                }
+                i = nextMarker;
+            }
+        }
+    }
+
+    private static string GetOpenRouterApiKey()
+    {
+        if (SettingsService.Instance.AiProvider == "Custom")
+        {
+            return SettingsService.Instance.OpenRouterApiKey?.Trim() ?? string.Empty;
+        }
+
+        return (Environment.GetEnvironmentVariable(DefaultFreeApiKeyEnvironmentVariable) ?? string.Empty).Trim();
+    }
 }

@@ -19,7 +19,10 @@ internal static class SearchEngine
         string SystemAction = "",
         bool IsWebUrl = false,
         string WebUrl = "",
-        bool IsWebSearch = false);
+        bool IsWebSearch = false,
+        bool IsAI = false,
+        string AIPrompt = "",
+        string AIResponse = "");
 
     // ═══════════════════════════════════════════════════
     //  System Commands
@@ -68,6 +71,7 @@ internal static class SearchEngine
         new UrlDetectionPlugin(),
         new CalculatorPlugin(),
         new SystemCommandsPlugin(),
+        new OpenRouterAIPlugin(),
         new AppSearchPlugin()
     };
 
@@ -80,6 +84,17 @@ internal static class SearchEngine
             int limit = Math.Min(8, apps.Count);
             for (int i = 0; i < limit; i++)
                 results.Add(new SearchResult(apps[i], Score: 1));
+            return results;
+        }
+
+        if (query.StartsWith("-"))
+        {
+            var aiPlugin = Plugins.Find(p => p is OpenRouterAIPlugin);
+            if (aiPlugin != null)
+            {
+                var pluginResults = aiPlugin.QueryAsync(query, apps, CancellationToken.None).GetAwaiter().GetResult();
+                results.AddRange(pluginResults);
+            }
             return results;
         }
 
@@ -273,6 +288,48 @@ internal static class SearchEngine
              return Task.FromResult(results);
          }
      }
+
+    private class OpenRouterAIPlugin : IWinCastPlugin
+    {
+        public string Name => "AI";
+        public string? Prefix => "-";
+        public string? IconGlyph => "\uEF58";
+        public int Priority => 90;
+
+        public bool CanHandle(string query)
+        {
+            return query.StartsWith("-");
+        }
+
+        public Task<List<SearchResult>> QueryAsync(string query, List<AppItem> apps, CancellationToken ct)
+        {
+            var results = new List<SearchResult>();
+            string prompt = query[1..].Trim();
+
+            if (string.IsNullOrEmpty(prompt))
+            {
+                string title = LocalizationService.GetString("AIAskPromptPlaceholder");
+                string desc = LocalizationService.GetString("AIPressEnter");
+                results.Add(new SearchResult(
+                    Item: new AppItem { Name = title, Path = "" },
+                    Score: 100,
+                    IsAI: true,
+                    AIPrompt: "",
+                    AIResponse: desc));
+                return Task.FromResult(results);
+            }
+
+            string askText = string.Format(LocalizationService.GetString("AIAskFor"), prompt);
+            results.Add(new SearchResult(
+                Item: new AppItem { Name = askText, Path = prompt },
+                Score: 100,
+                IsAI: true,
+                AIPrompt: prompt,
+                AIResponse: LocalizationService.GetString("AIPressEnter")));
+
+            return Task.FromResult(results);
+        }
+    }
 
     // ═══════════════════════════════════════════════════
     //  Fuzzy Scoring

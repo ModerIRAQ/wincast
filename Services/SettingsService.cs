@@ -13,6 +13,9 @@ internal class AppSettings
     public string SurfaceOpacity { get; set; } = "Balanced";
     public bool LaunchOnStartup { get; set; } = false;
     public string Language { get; set; } = "en";
+    public string OpenRouterApiKey { get; set; } = "";
+    public string AiProvider { get; set; } = "Free";
+    public string FreeModel { get; set; } = "openrouter/free";
 }
 
 internal static class SettingsService

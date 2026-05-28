@@ -26,12 +26,29 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <FontIcon Grid.Column="0"
+                <FontIcon x:Name="SearchIcon"
+                          Grid.Column="0"
                           Glyph="&#xE721;"
                           FontFamily="{StaticResource IconFont}"
                           FontSize="18"
                           Foreground="{StaticResource AccentColor}"
                           VerticalAlignment="Center"/>
+                <Button x:Name="AiModeBadge"
+                        Grid.Column="0"
+                        Visibility="Collapsed"
+                        Background="{StaticResource AccentDim}"
+                        BorderBrush="{StaticResource AccentBorder}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="8,4,8,4"
+                        Click="ExitAiModeButton_Click"
+                        VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Glyph="&#xEF58;" FontFamily="{StaticResource IconFont}" FontSize="12" Foreground="{StaticResource AccentColor}"/>
+                        <TextBlock x:Name="AiModeBadgeText" Text="AI Mode" FontSize="12" FontFamily="{StaticResource DisplayFont}" FontWeight="SemiBold" Foreground="{StaticResource AccentColor}" VerticalAlignment="Center"/>
+                        <FontIcon Glyph="&#xE711;" FontFamily="{StaticResource IconFont}" FontSize="8" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                    </StackPanel>
+                </Button>
                 <TextBox x:Name="SearchBox"
                          Grid.Column="1"
                          PlaceholderText="Search apps, calculate, run commands…"
@@ -393,6 +410,16 @@
                                             CornerRadius="6"
                                             Padding="10,6,10,6"
                                             Click="ExampleShellButton_Click"/>
+                                    <Button x:Name="ExampleAIButton"
+                                            Content="- what is AI?"
+                                            FontSize="11"
+                                            FontFamily="{StaticResource MonoFont}"
+                                            Background="{StaticResource SurfaceCard}"
+                                            BorderBrush="{StaticResource SearchBoxBorder}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Padding="10,6,10,6"
+                                            Click="ExampleAIButton_Click"/>
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
@@ -498,6 +525,13 @@
                                                           Visibility="{x:Bind WebSearchVisibility}"
                                                           HorizontalAlignment="Center"
                                                           VerticalAlignment="Center"/>
+                                                <FontIcon Glyph="&#xEF58;"
+                                                          FontFamily="{StaticResource IconFont}"
+                                                          FontSize="20"
+                                                          Foreground="{StaticResource AccentColor}"
+                                                          Visibility="{x:Bind AIVisibility}"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
                                                 <Image Source="{x:Bind IconSource}"
                                                        Width="28" Height="28"
                                                        Stretch="Uniform"
@@ -519,6 +553,12 @@
                                                            FontWeight="SemiBold"
                                                            Foreground="{StaticResource AccentColor}"
                                                            Visibility="{x:Bind CalcVisibility}"/>
+                                                <TextBlock Text="{x:Bind AIResponse, Mode=OneWay}"
+                                                           FontSize="12"
+                                                           FontFamily="{StaticResource BodyFont}"
+                                                           Foreground="{StaticResource TextSecondary}"
+                                                           TextWrapping="Wrap"
+                                                           Visibility="{x:Bind AIVisibility}"/>
                                                 <TextBlock Text="{x:Bind Path}"
                                                            FontSize="11"
                                                            FontFamily="{StaticResource BodyFont}"
@@ -570,6 +610,81 @@
                                        Foreground="{StaticResource TextMuted}"
                                        HorizontalAlignment="Center"/>
                         </StackPanel>
+
+                        <!-- AI CHAT PANEL -->
+                        <ScrollViewer x:Name="AiChatPanel" Visibility="Collapsed" Margin="8,6,8,6" VerticalScrollBarVisibility="Hidden" Opacity="0">
+                            <ScrollViewer.RenderTransform>
+                                <TranslateTransform x:Name="AiChatPanelTransform" Y="12"/>
+                            </ScrollViewer.RenderTransform>
+                            <StackPanel Spacing="16" Margin="14,14,14,14">
+                                <!-- User Prompt Bubble -->
+                                <StackPanel Spacing="6" HorizontalAlignment="Right" MaxWidth="540">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Right">
+                                        <TextBlock x:Name="AiChatUserLabel" Text="YOU" FontSize="10" FontFamily="{StaticResource DisplayFont}" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                                        <FontIcon Glyph="&#xE77B;" FontFamily="{StaticResource IconFont}" FontSize="10" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <Border Background="{StaticResource AccentDim}" CornerRadius="14,14,4,14" Padding="14,12,14,12" BorderBrush="{StaticResource AccentBorder}" BorderThickness="0.4">
+                                        <TextBlock x:Name="AiChatUserPromptText" Text="What is openrouter?" FontSize="13.5" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" IsTextSelectionEnabled="True" LineHeight="20"/>
+                                    </Border>
+                                </StackPanel>
+                                
+                                <!-- AI Response Bubble -->
+                                <StackPanel x:Name="AiResponsePanel" 
+                                            Spacing="6" 
+                                            HorizontalAlignment="Left" 
+                                            MaxWidth="540"
+                                            Background="Transparent"
+                                            PointerEntered="AiResponsePanel_PointerEntered"
+                                            PointerExited="AiResponsePanel_PointerExited">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Left">
+                                        <FontIcon Glyph="&#xEF58;" FontFamily="{StaticResource IconFont}" FontSize="11" Foreground="{StaticResource AccentColor}" VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="AiChatAILabel" Text="AI RESPONSE" FontSize="10" FontFamily="{StaticResource DisplayFont}" FontWeight="SemiBold" Foreground="{StaticResource AccentColor}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <Border Background="{StaticResource SurfaceCard}" CornerRadius="14,14,14,4" Padding="14,12,14,12" BorderThickness="1">
+                                        <!-- Top border accent glow -->
+                                        <Border.BorderBrush>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                <GradientStop Color="#4A3FAA" Offset="0"/>
+                                                <GradientStop Color="#303030" Offset="0.1"/>
+                                                <GradientStop Color="#303030" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.BorderBrush>
+                                        <Grid ColumnSpacing="10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <ProgressRing x:Name="AiThinkingRing" Grid.Column="0" Width="16" Height="16" IsActive="False" Visibility="Collapsed" Foreground="{StaticResource AccentColor}" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                                            <RichTextBlock x:Name="AiChatResponseRichText" Grid.Column="1" FontSize="13.5" FontFamily="{StaticResource BodyFont}" Foreground="{StaticResource TextPrimary}" IsTextSelectionEnabled="True" LineHeight="21"/>
+                                        </Grid>
+                                    </Border>
+                                    
+                                    <!-- Subtitle (Model Info + Copy Button) shown on hover -->
+                                    <Grid x:Name="AiResponseSubtitle" Visibility="Collapsed" Margin="4,2,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock x:Name="AiChatModelInfoText" 
+                                                   Text="" 
+                                                   FontSize="11" 
+                                                   FontFamily="{StaticResource BodyFont}" 
+                                                   Foreground="{StaticResource TextMuted}" 
+                                                   VerticalAlignment="Center"/>
+                                        <Button x:Name="AiCopyResponseButton" 
+                                                Grid.Column="1"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Padding="6,4,6,4"
+                                                VerticalAlignment="Center"
+                                                Click="AiCopyResponseButton_Click"
+                                                ToolTipService.ToolTip="Copy response">
+                                            <FontIcon Glyph="&#xE8C8;" FontFamily="{StaticResource IconFont}" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
+                                        </Button>
+                                    </Grid>
+                                </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
                     </Grid>
                 </Grid>
                 <!-- Vertical divider -->
@@ -641,6 +756,14 @@
                                                VerticalAlignment="Center"/>
                                     <FontIcon x:Name="DetailSearchIcon"
                                                Glyph="&#xE721;"
+                                               FontFamily="{StaticResource IconFont}"
+                                               FontSize="34"
+                                               Foreground="{StaticResource AccentColor}"
+                                               Visibility="Collapsed"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                    <FontIcon x:Name="DetailAIIcon"
+                                               Glyph="&#xEF58;"
                                                FontFamily="{StaticResource IconFont}"
                                                FontSize="34"
                                                Foreground="{StaticResource AccentColor}"
@@ -755,6 +878,56 @@
                                                Foreground="{StaticResource TextSecondary}"
                                                TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
                                 </Border>
+                            </StackPanel>
+                            <StackPanel x:Name="DetailAIContainer" Spacing="12" Visibility="Collapsed">
+                                <!-- User Prompt Bubble -->
+                                <StackPanel Spacing="4" HorizontalAlignment="Right" MaxWidth="210">
+                                    <TextBlock x:Name="DetailUserLabel"
+                                               Text="YOU" 
+                                               FontSize="9" 
+                                               FontFamily="{StaticResource DisplayFont}"
+                                               FontWeight="Bold" 
+                                               Foreground="{StaticResource TextSecondary}"
+                                               HorizontalAlignment="Right"
+                                               CharacterSpacing="100"/>
+                                    <Border Background="{StaticResource AccentDim}" 
+                                            CornerRadius="12,12,2,12" 
+                                            Padding="10,8,10,8"
+                                            BorderThickness="0">
+                                        <TextBlock x:Name="DetailUserPromptText"
+                                                   Text="What is openrouter?"
+                                                   FontSize="12" 
+                                                   FontFamily="{StaticResource BodyFont}"
+                                                   Foreground="{StaticResource TextPrimary}"
+                                                   TextWrapping="Wrap" 
+                                                   IsTextSelectionEnabled="True"/>
+                                    </Border>
+                                </StackPanel>
+                                
+                                <!-- AI Response Bubble -->
+                                <StackPanel Spacing="4" HorizontalAlignment="Left" MaxWidth="210">
+                                    <TextBlock x:Name="DetailTypeAILabel" 
+                                               Text="AI RESPONSE"
+                                               FontSize="9" 
+                                               FontFamily="{StaticResource DisplayFont}"
+                                               FontWeight="Bold" 
+                                               Foreground="{StaticResource AccentColor}"
+                                               HorizontalAlignment="Left"
+                                               CharacterSpacing="100"/>
+                                    <Border Background="{StaticResource SurfaceCard}" 
+                                            CornerRadius="12,12,12,2" 
+                                            Padding="12,9,12,9" 
+                                            BorderBrush="{StaticResource SearchBoxBorder}" 
+                                            BorderThickness="1">
+                                        <TextBlock x:Name="DetailAIText"
+                                                   Text="AI response will appear here..."
+                                                   FontSize="12" 
+                                                   FontFamily="{StaticResource BodyFont}"
+                                                   Foreground="{StaticResource TextPrimary}"
+                                                   TextWrapping="Wrap" 
+                                                   IsTextSelectionEnabled="True"/>
+                                    </Border>
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
@@ -1069,6 +1242,117 @@
                                             <ComboBoxItem Content="English" Tag="en"/>
                                             <ComboBoxItem Content="العربية" Tag="ar"/>
                                         </ComboBox>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                            <!-- AI INTEGRATION CARD -->
+                            <Border Background="{StaticResource SurfaceCard}"
+                                    BorderBrush="{StaticResource SearchBoxBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="16,14,16,14">
+                                <StackPanel Spacing="14">
+                                    <StackPanel Spacing="3">
+                                        <TextBlock x:Name="SettingAITitleText"
+                                                   Text="AI Integration"
+                                                   FontSize="14"
+                                                   FontFamily="{StaticResource DisplayFont}"
+                                                   FontWeight="Medium"
+                                                   Foreground="{StaticResource TextPrimary}"/>
+                                        <TextBlock x:Name="SettingAIDescText"
+                                                   Text="Configure OpenRouter free LLM access. Prefix query with (-) to ask anything."
+                                                   FontSize="12"
+                                                   FontFamily="{StaticResource BodyFont}"
+                                                   Foreground="{StaticResource TextSecondary}"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    
+                                    <!-- AI Provider Dropdown -->
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Spacing="1" VerticalAlignment="Center">
+                                            <TextBlock x:Name="SettingAIProviderTitleText"
+                                                       Text="AI Provider"
+                                                       FontSize="12"
+                                                       FontFamily="{StaticResource DisplayFont}"
+                                                       FontWeight="Medium"
+                                                       Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock x:Name="SettingAIProviderDescText"
+                                                       Text="Choose between the default free router or a custom API key."
+                                                       FontSize="11"
+                                                       FontFamily="{StaticResource BodyFont}"
+                                                       Foreground="{StaticResource TextMuted}"/>
+                                        </StackPanel>
+                                        <ComboBox x:Name="AiProviderComboBox"
+                                                  Grid.Column="1"
+                                                  Width="220"
+                                                  VerticalAlignment="Center">
+                                            <ComboBoxItem x:Name="AiProviderFreeItem" Content="Free Models Router" Tag="Free"/>
+                                            <ComboBoxItem x:Name="AiProviderCustomItem" Content="Custom API Key" Tag="Custom"/>
+                                        </ComboBox>
+                                    </Grid>
+
+                                    <!-- Model Selection dropdown (shown/hidden dynamically) -->
+                                    <Grid x:Name="ModelSettingsGrid" ColumnSpacing="12" Visibility="Collapsed">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Spacing="1" VerticalAlignment="Center">
+                                            <TextBlock x:Name="SettingModelTitleText"
+                                                       Text="AI Model"
+                                                       FontSize="12"
+                                                       FontFamily="{StaticResource DisplayFont}"
+                                                       FontWeight="Medium"
+                                                       Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock x:Name="SettingModelDescText"
+                                                       Text="Select which model to use."
+                                                       FontSize="11"
+                                                       FontFamily="{StaticResource BodyFont}"
+                                                       Foreground="{StaticResource TextMuted}"/>
+                                        </StackPanel>
+                                        <ComboBox x:Name="ModelComboBox"
+                                                  Grid.Column="1"
+                                                  Width="220"
+                                                  VerticalAlignment="Center">
+                                            <ComboBoxItem Content="Auto Free Router" Tag="openrouter/free"/>
+                                            <ComboBoxItem Content="Gemini 2.5 Flash" Tag="google/gemini-2.5-flash"/>
+                                            <ComboBoxItem Content="Claude 3.5 Sonnet" Tag="anthropic/claude-3.5-sonnet"/>
+                                            <ComboBoxItem Content="GPT-4o" Tag="openai/gpt-4o"/>
+                                            <ComboBoxItem Content="Llama 3.3 70B" Tag="meta-llama/llama-3.3-70b-instruct"/>
+                                            <ComboBoxItem Content="DeepSeek V3" Tag="deepseek/deepseek-chat"/>
+                                            <ComboBoxItem Content="DeepSeek R1" Tag="deepseek/deepseek-r1"/>
+                                        </ComboBox>
+                                    </Grid>
+
+                                    <!-- Custom API Key input (shown/hidden dynamically) -->
+                                    <Grid x:Name="AiKeySettingsGrid" ColumnSpacing="12" Visibility="Collapsed">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Spacing="1" VerticalAlignment="Center">
+                                            <TextBlock x:Name="SettingAIKeyHeaderText"
+                                                       Text="OpenRouter API Key"
+                                                       FontSize="12"
+                                                       FontFamily="{StaticResource DisplayFont}"
+                                                       FontWeight="Medium"
+                                                       Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock x:Name="SettingAIKeyDescText"
+                                                       Text="Enter your OpenRouter API Key (sk-or-...)"
+                                                       FontSize="11"
+                                                       FontFamily="{StaticResource BodyFont}"
+                                                       Foreground="{StaticResource TextMuted}"/>
+                                        </StackPanel>
+                                        <PasswordBox x:Name="OpenRouterApiKeyBox"
+                                                     Grid.Column="1"
+                                                     Width="220"
+                                                     PlaceholderText="Enter API Key"
+                                                     PasswordChar="●"
+                                                     VerticalAlignment="Center"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
