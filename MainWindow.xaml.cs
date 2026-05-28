@@ -20,7 +20,6 @@ namespace WinCast;
 
 public sealed partial class MainWindow : Window
 {
-    private const string DefaultFreeApiKeyEnvironmentVariable = "WINCAST_OPENROUTER_API_KEY";
     private IntPtr _hwnd;
     private List<AppItem> _apps = new();
     private readonly ObservableCollection<SearchResultItem> _searchResults = new();
@@ -107,7 +106,6 @@ public sealed partial class MainWindow : Window
         SurfaceOpacityComboBox.SelectionChanged += SurfaceOpacityComboBox_SelectionChanged;
         LanguageComboBox.SelectionChanged += LanguageComboBox_SelectionChanged;
         OpenRouterApiKeyBox.PasswordChanged += OpenRouterApiKeyBox_PasswordChanged;
-        AiProviderComboBox.SelectionChanged += AiProviderComboBox_SelectionChanged;
         ModelComboBox.SelectionChanged += ModelComboBox_SelectionChanged;
         SettingsTabButton.Click += (s, e) => SwitchSettingsTab(true);
         HelpTabButton.Click += (s, e) => SwitchSettingsTab(false);
@@ -1696,14 +1694,8 @@ public sealed partial class MainWindow : Window
                 _ => 0
             };
 
-            AiProviderComboBox.SelectedIndex = SettingsService.Instance.AiProvider switch
-            {
-                "Custom" => 1,
-                _ => 0
-            };
-            AiKeySettingsGrid.Visibility = SettingsService.Instance.AiProvider == "Custom"
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+            SettingsService.Instance.AiProvider = "Custom";
+            AiKeySettingsGrid.Visibility = Visibility.Visible;
 
             // Select the saved model in ModelComboBox
             string savedModel = SettingsService.Instance.FreeModel;
@@ -1783,36 +1775,8 @@ public sealed partial class MainWindow : Window
         SettingsService.Instance.OpenRouterApiKey = OpenRouterApiKeyBox.Password;
         SettingsService.Save();
 
-        if (SettingsService.Instance.AiProvider == "Custom")
-        {
-            _modelsLoadedForProvider = false;
-            DebounceFetchModels();
-        }
-    }
-
-    private void AiProviderComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (AiProviderComboBox == null) return;
-        string? val = (AiProviderComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "Free";
-
-        if (SettingsService.Instance.AiProvider != val)
-        {
-            SettingsService.Instance.AiProvider = val;
-            SettingsService.Save();
-        }
-
-        if (AiKeySettingsGrid != null)
-        {
-            AiKeySettingsGrid.Visibility = val == "Custom" ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        if (ModelSettingsGrid != null)
-        {
-            ModelSettingsGrid.Visibility = Visibility.Visible;
-        }
-
         _modelsLoadedForProvider = false;
-        _ = FetchModelsAsync();
+        DebounceFetchModels();
     }
 
     private void ModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1844,7 +1808,7 @@ public sealed partial class MainWindow : Window
 
     private async Task FetchModelsAsync()
     {
-        string currentProvider = SettingsService.Instance.AiProvider;
+        const string currentProvider = "Custom";
         string apiKey = GetOpenRouterApiKey();
 
         if (_modelsLoadedForProvider && _lastLoadedProvider == currentProvider) return;
@@ -1870,7 +1834,7 @@ public sealed partial class MainWindow : Window
             {
                 var models = new List<(string Id, string Name)>();
                 
-                models.Add(("openrouter/free", "Auto Free Router"));
+                models.Add(("openrouter/free", "OpenRouter Auto Router"));
 
                 foreach (var modelElement in dataArray.EnumerateArray())
                 {
@@ -1882,39 +1846,7 @@ public sealed partial class MainWindow : Window
 
                         if (id == "openrouter/free") continue;
 
-                        if (currentProvider == "Free")
-                        {
-                            double promptPrice = 0;
-                            double completionPrice = 0;
-
-                            if (modelElement.TryGetProperty("pricing", out var pricingProp))
-                            {
-                                if (pricingProp.TryGetProperty("prompt", out var promptProp))
-                                {
-                                    if (promptProp.ValueKind == JsonValueKind.String)
-                                        double.TryParse(promptProp.GetString(), out promptPrice);
-                                    else if (promptProp.ValueKind == JsonValueKind.Number)
-                                        promptPrice = promptProp.GetDouble();
-                                }
-
-                                if (pricingProp.TryGetProperty("completion", out var completionProp))
-                                {
-                                    if (completionProp.ValueKind == JsonValueKind.String)
-                                        double.TryParse(completionProp.GetString(), out completionPrice);
-                                    else if (completionProp.ValueKind == JsonValueKind.Number)
-                                        completionPrice = completionProp.GetDouble();
-                                }
-                            }
-
-                            if (promptPrice == 0 && completionPrice == 0)
-                            {
-                                models.Add((id, name));
-                            }
-                        }
-                        else
-                        {
-                            models.Add((id, name));
-                        }
+                        models.Add((id, name));
                     }
                 }
 
@@ -2318,12 +2250,8 @@ public sealed partial class MainWindow : Window
         ExampleAIButton.Content = LocalizationService.GetString("ExampleAIPrompt", lang);
         SettingAITitleText.Text = LocalizationService.GetString("SettingAITitle", lang);
         SettingAIDescText.Text = LocalizationService.GetString("SettingAIDesc", lang);
-        SettingAIProviderTitleText.Text = LocalizationService.GetString("SettingAIProviderTitle", lang);
-        SettingAIProviderDescText.Text = LocalizationService.GetString("SettingAIProviderDesc", lang);
         SettingModelTitleText.Text = LocalizationService.GetString("SettingModelTitle", lang);
         SettingModelDescText.Text = LocalizationService.GetString("SettingModelDesc", lang);
-        AiProviderFreeItem.Content = LocalizationService.GetString("AiProviderFree", lang);
-        AiProviderCustomItem.Content = LocalizationService.GetString("AiProviderCustom", lang);
         SettingAIKeyHeaderText.Text = LocalizationService.GetString("SettingAIKeyHeader", lang);
         OpenRouterApiKeyBox.PlaceholderText = LocalizationService.GetString("SettingAIKeyPlaceholder", lang);
 
@@ -2351,12 +2279,8 @@ public sealed partial class MainWindow : Window
         // 9b. AI Integration Card
         SettingAITitleText.Text = LocalizationService.GetString("SettingAITitle", lang);
         SettingAIDescText.Text = LocalizationService.GetString("SettingAIDesc", lang);
-        SettingAIProviderTitleText.Text = LocalizationService.GetString("SettingAIProviderTitle", lang);
-        SettingAIProviderDescText.Text = LocalizationService.GetString("SettingAIProviderDesc", lang);
         SettingModelTitleText.Text = LocalizationService.GetString("SettingModelTitle", lang);
         SettingModelDescText.Text = LocalizationService.GetString("SettingModelDesc", lang);
-        AiProviderFreeItem.Content = LocalizationService.GetString("AiProviderFree", lang);
-        AiProviderCustomItem.Content = LocalizationService.GetString("AiProviderCustom", lang);
         SettingAIKeyHeaderText.Text = LocalizationService.GetString("SettingAIKeyHeader", lang);
         SettingAIKeyDescText.Text = LocalizationService.GetString("SettingAIKeyPlaceholder", lang);
         OpenRouterApiKeyBox.PlaceholderText = LocalizationService.GetString("SettingAIKeyPlaceholder", lang);
@@ -2863,11 +2787,6 @@ public sealed partial class MainWindow : Window
 
     private static string GetOpenRouterApiKey()
     {
-        if (SettingsService.Instance.AiProvider == "Custom")
-        {
-            return SettingsService.Instance.OpenRouterApiKey?.Trim() ?? string.Empty;
-        }
-
-        return (Environment.GetEnvironmentVariable(DefaultFreeApiKeyEnvironmentVariable) ?? string.Empty).Trim();
+        return SettingsService.Instance.OpenRouterApiKey?.Trim() ?? string.Empty;
     }
 }

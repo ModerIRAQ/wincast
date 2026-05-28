@@ -1260,41 +1260,13 @@
                                                    FontWeight="Medium"
                                                    Foreground="{StaticResource TextPrimary}"/>
                                         <TextBlock x:Name="SettingAIDescText"
-                                                   Text="Configure OpenRouter free LLM access. Prefix query with (-) to ask anything."
+                                                   Text="Configure your OpenRouter API key. Prefix query with (-) to ask anything."
                                                    FontSize="12"
                                                    FontFamily="{StaticResource BodyFont}"
                                                    Foreground="{StaticResource TextSecondary}"
                                                    TextWrapping="Wrap"/>
                                     </StackPanel>
                                     
-                                    <!-- AI Provider Dropdown -->
-                                    <Grid ColumnSpacing="12">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Spacing="1" VerticalAlignment="Center">
-                                            <TextBlock x:Name="SettingAIProviderTitleText"
-                                                       Text="AI Provider"
-                                                       FontSize="12"
-                                                       FontFamily="{StaticResource DisplayFont}"
-                                                       FontWeight="Medium"
-                                                       Foreground="{StaticResource TextPrimary}"/>
-                                            <TextBlock x:Name="SettingAIProviderDescText"
-                                                       Text="Choose between the default free router or a custom API key."
-                                                       FontSize="11"
-                                                       FontFamily="{StaticResource BodyFont}"
-                                                       Foreground="{StaticResource TextMuted}"/>
-                                        </StackPanel>
-                                        <ComboBox x:Name="AiProviderComboBox"
-                                                  Grid.Column="1"
-                                                  Width="220"
-                                                  VerticalAlignment="Center">
-                                            <ComboBoxItem x:Name="AiProviderFreeItem" Content="Free Models Router" Tag="Free"/>
-                                            <ComboBoxItem x:Name="AiProviderCustomItem" Content="Custom API Key" Tag="Custom"/>
-                                        </ComboBox>
-                                    </Grid>
-
                                     <!-- Model Selection dropdown (shown/hidden dynamically) -->
                                     <Grid x:Name="ModelSettingsGrid" ColumnSpacing="12" Visibility="Collapsed">
                                         <Grid.ColumnDefinitions>
@@ -1318,7 +1290,7 @@
                                                   Grid.Column="1"
                                                   Width="220"
                                                   VerticalAlignment="Center">
-                                            <ComboBoxItem Content="Auto Free Router" Tag="openrouter/free"/>
+                                            <ComboBoxItem Content="OpenRouter Auto Router" Tag="openrouter/free"/>
                                             <ComboBoxItem Content="Gemini 2.5 Flash" Tag="google/gemini-2.5-flash"/>
                                             <ComboBoxItem Content="Claude 3.5 Sonnet" Tag="anthropic/claude-3.5-sonnet"/>
                                             <ComboBoxItem Content="GPT-4o" Tag="openai/gpt-4o"/>

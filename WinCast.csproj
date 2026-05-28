@@ -31,8 +31,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.5" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.241114003" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="tests\**\*.cs;artifacts\**\*.cs;bin\**\*.cs;obj\**\*.cs" />
+    <None Remove="tests\**;artifacts\**;bin\**;obj\**" />
   </ItemGroup>
 
   <ItemGroup>
